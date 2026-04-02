@@ -1,5 +1,11 @@
 import { defineMiddleware } from 'astro:middleware'
 
+import {
+  loadDocsMarkdownBody,
+  parseDocsContentPath,
+  preferredMarkdownPlainFormat,
+  shouldTryMarkdownPath,
+} from './utils/acceptMarkdownNegotiation'
 import { redirects } from './utils/redirects'
 
 function filterProxyHeaders(headers: Headers): Headers {
