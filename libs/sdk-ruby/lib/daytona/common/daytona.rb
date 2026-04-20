@@ -3,6 +3,9 @@
 
 # frozen_string_literal: true
 
+# Copyright Daytona Platforms Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 module Daytona
   CODE_TOOLBOX_LANGUAGE_LABEL = 'code-toolbox-language'
 
