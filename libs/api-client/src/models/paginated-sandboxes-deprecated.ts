@@ -20,31 +20,31 @@ import type { Sandbox } from './sandbox';
 /**
  * 
  * @export
- * @interface PaginatedSandboxes
+ * @interface PaginatedSandboxesDeprecated
  */
-export interface PaginatedSandboxes {
+export interface PaginatedSandboxesDeprecated {
     /**
      * 
      * @type {Array<Sandbox>}
-     * @memberof PaginatedSandboxes
+     * @memberof PaginatedSandboxesDeprecated
      */
     'items': Array<Sandbox>;
     /**
      * 
      * @type {number}
-     * @memberof PaginatedSandboxes
+     * @memberof PaginatedSandboxesDeprecated
      */
     'total': number;
     /**
      * 
      * @type {number}
-     * @memberof PaginatedSandboxes
+     * @memberof PaginatedSandboxesDeprecated
      */
     'page': number;
     /**
      * 
      * @type {number}
-     * @memberof PaginatedSandboxes
+     * @memberof PaginatedSandboxesDeprecated
      */
     'totalPages': number;
 }

@@ -27,7 +27,7 @@ from daytona_api_client_async.models.fork_sandbox import ForkSandbox
 from daytona_api_client_async.models.metrics_response import MetricsResponse
 from daytona_api_client_async.models.organization import Organization
 from daytona_api_client_async.models.paginated_logs import PaginatedLogs
-from daytona_api_client_async.models.paginated_sandboxes import PaginatedSandboxes
+from daytona_api_client_async.models.paginated_sandboxes_deprecated import PaginatedSandboxesDeprecated
 from daytona_api_client_async.models.paginated_traces import PaginatedTraces
 from daytona_api_client_async.models.port_preview_url import PortPreviewUrl
 from daytona_api_client_async.models.region_quota import RegionQuota
@@ -7476,7 +7476,7 @@ class SandboxApi:
 
 
     @validate_call
-    async def list_sandboxes_paginated(
+    async def list_sandboxes_paginated_deprecated(
         self,
         x_daytona_organization_id: Annotated[Optional[StrictStr], Field(description="Use with JWT to specify the organization ID")] = None,
         page: Annotated[Optional[Union[Annotated[float, Field(strict=True, ge=1)], Annotated[int, Field(strict=True, ge=1)]]], Field(description="Page number of the results")] = None,
@@ -7510,8 +7510,8 @@ class SandboxApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PaginatedSandboxes:
-        """List all sandboxes paginated
+    ) -> PaginatedSandboxesDeprecated:
+        """(Deprecated) [DEPRECATED] List all sandboxes paginated
 
 
         :param x_daytona_organization_id: Use with JWT to specify the organization ID
@@ -7575,8 +7575,9 @@ class SandboxApi:
         :type _host_index: int, optional
         :return: Returns the result object.
         """ # noqa: E501
+        warnings.warn("GET /sandbox/paginated is deprecated.", DeprecationWarning)
 
-        _param = self._list_sandboxes_paginated_serialize(
+        _param = self._list_sandboxes_paginated_deprecated_serialize(
             x_daytona_organization_id=x_daytona_organization_id,
             page=page,
             limit=limit,
@@ -7604,7 +7605,7 @@ class SandboxApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PaginatedSandboxes",
+            '200': "PaginatedSandboxesDeprecated",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -7618,7 +7619,7 @@ class SandboxApi:
 
 
     @validate_call
-    async def list_sandboxes_paginated_with_http_info(
+    async def list_sandboxes_paginated_deprecated_with_http_info(
         self,
         x_daytona_organization_id: Annotated[Optional[StrictStr], Field(description="Use with JWT to specify the organization ID")] = None,
         page: Annotated[Optional[Union[Annotated[float, Field(strict=True, ge=1)], Annotated[int, Field(strict=True, ge=1)]]], Field(description="Page number of the results")] = None,
@@ -7652,8 +7653,8 @@ class SandboxApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PaginatedSandboxes]:
-        """List all sandboxes paginated
+    ) -> ApiResponse[PaginatedSandboxesDeprecated]:
+        """(Deprecated) [DEPRECATED] List all sandboxes paginated
 
 
         :param x_daytona_organization_id: Use with JWT to specify the organization ID
@@ -7717,8 +7718,9 @@ class SandboxApi:
         :type _host_index: int, optional
         :return: Returns the result object.
         """ # noqa: E501
+        warnings.warn("GET /sandbox/paginated is deprecated.", DeprecationWarning)
 
-        _param = self._list_sandboxes_paginated_serialize(
+        _param = self._list_sandboxes_paginated_deprecated_serialize(
             x_daytona_organization_id=x_daytona_organization_id,
             page=page,
             limit=limit,
@@ -7746,7 +7748,7 @@ class SandboxApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PaginatedSandboxes",
+            '200': "PaginatedSandboxesDeprecated",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -7760,7 +7762,7 @@ class SandboxApi:
 
 
     @validate_call
-    async def list_sandboxes_paginated_without_preload_content(
+    async def list_sandboxes_paginated_deprecated_without_preload_content(
         self,
         x_daytona_organization_id: Annotated[Optional[StrictStr], Field(description="Use with JWT to specify the organization ID")] = None,
         page: Annotated[Optional[Union[Annotated[float, Field(strict=True, ge=1)], Annotated[int, Field(strict=True, ge=1)]]], Field(description="Page number of the results")] = None,
@@ -7795,7 +7797,7 @@ class SandboxApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """List all sandboxes paginated
+        """(Deprecated) [DEPRECATED] List all sandboxes paginated
 
 
         :param x_daytona_organization_id: Use with JWT to specify the organization ID
@@ -7859,8 +7861,9 @@ class SandboxApi:
         :type _host_index: int, optional
         :return: Returns the result object.
         """ # noqa: E501
+        warnings.warn("GET /sandbox/paginated is deprecated.", DeprecationWarning)
 
-        _param = self._list_sandboxes_paginated_serialize(
+        _param = self._list_sandboxes_paginated_deprecated_serialize(
             x_daytona_organization_id=x_daytona_organization_id,
             page=page,
             limit=limit,
@@ -7888,7 +7891,7 @@ class SandboxApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PaginatedSandboxes",
+            '200': "PaginatedSandboxesDeprecated",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -7897,7 +7900,7 @@ class SandboxApi:
         return response_data.response
 
 
-    def _list_sandboxes_paginated_serialize(
+    def _list_sandboxes_paginated_deprecated_serialize(
         self,
         x_daytona_organization_id,
         page,

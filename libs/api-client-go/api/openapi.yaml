@@ -1612,7 +1612,8 @@ paths:
       - sandbox
   /sandbox/paginated:
     get:
-      operationId: listSandboxesPaginated
+      deprecated: true
+      operationId: listSandboxesPaginated_deprecated
       parameters:
       - description: Use with JWT to specify the organization ID
         explode: false
@@ -1837,7 +1838,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedSandboxes'
+                $ref: '#/components/schemas/PaginatedSandboxes_deprecated'
           description: Paginated list of all sandboxes
       security:
       - bearer: []
@@ -1845,7 +1846,7 @@ paths:
         - openid
         - profile
         - email
-      summary: List all sandboxes paginated
+      summary: "[DEPRECATED] List all sandboxes paginated"
       tags:
       - sandbox
   /sandbox/for-runner:
@@ -10792,7 +10793,7 @@ components:
       - toolboxProxyUrl
       - user
       type: object
-    PaginatedSandboxes:
+    PaginatedSandboxes_deprecated:
       example:
         total: 0.8008281904610115
         totalPages: 1.4658129805029452

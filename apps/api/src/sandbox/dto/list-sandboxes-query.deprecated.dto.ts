@@ -11,7 +11,7 @@ import { ToArray } from '../../common/decorators/to-array.decorator'
 import { PageNumber } from '../../common/decorators/page-number.decorator'
 import { PageLimit } from '../../common/decorators/page-limit.decorator'
 
-export enum SandboxSortField {
+export enum SandboxSortFieldDeprecated {
   ID = 'id',
   NAME = 'name',
   STATE = 'state',
@@ -22,18 +22,18 @@ export enum SandboxSortField {
   LAST_ACTIVITY_AT = 'lastActivityAt',
 }
 
-export enum SandboxSortDirection {
+export enum SandboxSortDirectionDeprecated {
   ASC = 'asc',
   DESC = 'desc',
 }
 
-export const DEFAULT_SANDBOX_SORT_FIELD = SandboxSortField.CREATED_AT
-export const DEFAULT_SANDBOX_SORT_DIRECTION = SandboxSortDirection.DESC
+export const DEFAULT_SANDBOX_SORT_FIELD_DEPRECATED = SandboxSortFieldDeprecated.CREATED_AT
+export const DEFAULT_SANDBOX_SORT_DIRECTION_DEPRECATED = SandboxSortDirectionDeprecated.DESC
 
 const VALID_QUERY_STATES = Object.values(SandboxState).filter((state) => state !== SandboxState.DESTROYED)
 
-@ApiSchema({ name: 'ListSandboxesQuery' })
-export class ListSandboxesQueryDto {
+@ApiSchema({ name: 'ListSandboxesQuery_deprecated' })
+export class ListSandboxesQueryDtoDeprecated {
   @PageNumber(1)
   page = 1
 
@@ -233,21 +233,21 @@ export class ListSandboxesQueryDto {
     name: 'sort',
     description: 'Field to sort by',
     required: false,
-    enum: SandboxSortField,
-    default: DEFAULT_SANDBOX_SORT_FIELD,
+    enum: SandboxSortFieldDeprecated,
+    default: DEFAULT_SANDBOX_SORT_FIELD_DEPRECATED,
   })
   @IsOptional()
-  @IsEnum(SandboxSortField)
-  sort = DEFAULT_SANDBOX_SORT_FIELD
+  @IsEnum(SandboxSortFieldDeprecated)
+  sort = DEFAULT_SANDBOX_SORT_FIELD_DEPRECATED
 
   @ApiProperty({
     name: 'order',
     description: 'Direction to sort by',
     required: false,
-    enum: SandboxSortDirection,
-    default: DEFAULT_SANDBOX_SORT_DIRECTION,
+    enum: SandboxSortDirectionDeprecated,
+    default: DEFAULT_SANDBOX_SORT_DIRECTION_DEPRECATED,
   })
   @IsOptional()
-  @IsEnum(SandboxSortDirection)
-  order = DEFAULT_SANDBOX_SORT_DIRECTION
+  @IsEnum(SandboxSortDirectionDeprecated)
+  order = DEFAULT_SANDBOX_SORT_DIRECTION_DEPRECATED
 }

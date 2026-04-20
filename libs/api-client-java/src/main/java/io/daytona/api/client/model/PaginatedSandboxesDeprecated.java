@@ -50,10 +50,10 @@ import java.util.Set;
 import io.daytona.api.client.JSON;
 
 /**
- * PaginatedSandboxes
+ * PaginatedSandboxesDeprecated
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class PaginatedSandboxes {
+public class PaginatedSandboxesDeprecated {
   public static final String SERIALIZED_NAME_ITEMS = "items";
   @SerializedName(SERIALIZED_NAME_ITEMS)
   @javax.annotation.Nonnull
@@ -74,15 +74,15 @@ public class PaginatedSandboxes {
   @javax.annotation.Nonnull
   private BigDecimal totalPages;
 
-  public PaginatedSandboxes() {
+  public PaginatedSandboxesDeprecated() {
   }
 
-  public PaginatedSandboxes items(@javax.annotation.Nonnull List<Sandbox> items) {
+  public PaginatedSandboxesDeprecated items(@javax.annotation.Nonnull List<Sandbox> items) {
     this.items = items;
     return this;
   }
 
-  public PaginatedSandboxes addItemsItem(Sandbox itemsItem) {
+  public PaginatedSandboxesDeprecated addItemsItem(Sandbox itemsItem) {
     if (this.items == null) {
       this.items = new ArrayList<>();
     }
@@ -104,7 +104,7 @@ public class PaginatedSandboxes {
   }
 
 
-  public PaginatedSandboxes total(@javax.annotation.Nonnull BigDecimal total) {
+  public PaginatedSandboxesDeprecated total(@javax.annotation.Nonnull BigDecimal total) {
     this.total = total;
     return this;
   }
@@ -123,7 +123,7 @@ public class PaginatedSandboxes {
   }
 
 
-  public PaginatedSandboxes page(@javax.annotation.Nonnull BigDecimal page) {
+  public PaginatedSandboxesDeprecated page(@javax.annotation.Nonnull BigDecimal page) {
     this.page = page;
     return this;
   }
@@ -142,7 +142,7 @@ public class PaginatedSandboxes {
   }
 
 
-  public PaginatedSandboxes totalPages(@javax.annotation.Nonnull BigDecimal totalPages) {
+  public PaginatedSandboxesDeprecated totalPages(@javax.annotation.Nonnull BigDecimal totalPages) {
     this.totalPages = totalPages;
     return this;
   }
@@ -173,9 +173,9 @@ public class PaginatedSandboxes {
    *
    * @param key name of the property
    * @param value value of the property
-   * @return the PaginatedSandboxes instance itself
+   * @return the PaginatedSandboxesDeprecated instance itself
    */
-  public PaginatedSandboxes putAdditionalProperty(String key, Object value) {
+  public PaginatedSandboxesDeprecated putAdditionalProperty(String key, Object value) {
     if (this.additionalProperties == null) {
         this.additionalProperties = new HashMap<String, Object>();
     }
@@ -214,12 +214,12 @@ public class PaginatedSandboxes {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PaginatedSandboxes paginatedSandboxes = (PaginatedSandboxes) o;
-    return Objects.equals(this.items, paginatedSandboxes.items) &&
-        Objects.equals(this.total, paginatedSandboxes.total) &&
-        Objects.equals(this.page, paginatedSandboxes.page) &&
-        Objects.equals(this.totalPages, paginatedSandboxes.totalPages)&&
-        Objects.equals(this.additionalProperties, paginatedSandboxes.additionalProperties);
+    PaginatedSandboxesDeprecated paginatedSandboxesDeprecated = (PaginatedSandboxesDeprecated) o;
+    return Objects.equals(this.items, paginatedSandboxesDeprecated.items) &&
+        Objects.equals(this.total, paginatedSandboxesDeprecated.total) &&
+        Objects.equals(this.page, paginatedSandboxesDeprecated.page) &&
+        Objects.equals(this.totalPages, paginatedSandboxesDeprecated.totalPages)&&
+        Objects.equals(this.additionalProperties, paginatedSandboxesDeprecated.additionalProperties);
   }
 
   @Override
@@ -230,7 +230,7 @@ public class PaginatedSandboxes {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class PaginatedSandboxes {\n");
+    sb.append("class PaginatedSandboxesDeprecated {\n");
     sb.append("    items: ").append(toIndentedString(items)).append("\n");
     sb.append("    total: ").append(toIndentedString(total)).append("\n");
     sb.append("    page: ").append(toIndentedString(page)).append("\n");
@@ -275,17 +275,17 @@ public class PaginatedSandboxes {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to PaginatedSandboxes
+   * @throws IOException if the JSON Element is invalid with respect to PaginatedSandboxesDeprecated
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!PaginatedSandboxes.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format("The required field(s) %s in PaginatedSandboxes is not found in the empty JSON string", PaginatedSandboxes.openapiRequiredFields.toString()));
+        if (!PaginatedSandboxesDeprecated.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format("The required field(s) %s in PaginatedSandboxesDeprecated is not found in the empty JSON string", PaginatedSandboxesDeprecated.openapiRequiredFields.toString()));
         }
       }
 
       // check to make sure all required properties/fields are present in the JSON string
-      for (String requiredField : PaginatedSandboxes.openapiRequiredFields) {
+      for (String requiredField : PaginatedSandboxesDeprecated.openapiRequiredFields) {
         if (jsonElement.getAsJsonObject().get(requiredField) == null) {
           throw new IllegalArgumentException(String.format("The required field `%s` is not found in the JSON string: %s", requiredField, jsonElement.toString()));
         }
@@ -307,16 +307,16 @@ public class PaginatedSandboxes {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!PaginatedSandboxes.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'PaginatedSandboxes' and its subtypes
+       if (!PaginatedSandboxesDeprecated.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'PaginatedSandboxesDeprecated' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<PaginatedSandboxes> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(PaginatedSandboxes.class));
+       final TypeAdapter<PaginatedSandboxesDeprecated> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(PaginatedSandboxesDeprecated.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<PaginatedSandboxes>() {
+       return (TypeAdapter<T>) new TypeAdapter<PaginatedSandboxesDeprecated>() {
            @Override
-           public void write(JsonWriter out, PaginatedSandboxes value) throws IOException {
+           public void write(JsonWriter out, PaginatedSandboxesDeprecated value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              obj.remove("additionalProperties");
              // serialize additional properties
@@ -344,12 +344,12 @@ public class PaginatedSandboxes {
            }
 
            @Override
-           public PaginatedSandboxes read(JsonReader in) throws IOException {
+           public PaginatedSandboxesDeprecated read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              JsonObject jsonObj = jsonElement.getAsJsonObject();
              // store additional fields in the deserialized instance
-             PaginatedSandboxes instance = thisAdapter.fromJsonTree(jsonObj);
+             PaginatedSandboxesDeprecated instance = thisAdapter.fromJsonTree(jsonObj);
              for (Map.Entry<String, JsonElement> entry : jsonObj.entrySet()) {
                if (!openapiFields.contains(entry.getKey())) {
                  if (entry.getValue().isJsonPrimitive()) { // primitive type
@@ -376,18 +376,18 @@ public class PaginatedSandboxes {
   }
 
   /**
-   * Create an instance of PaginatedSandboxes given an JSON string
+   * Create an instance of PaginatedSandboxesDeprecated given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of PaginatedSandboxes
-   * @throws IOException if the JSON string is invalid with respect to PaginatedSandboxes
+   * @return An instance of PaginatedSandboxesDeprecated
+   * @throws IOException if the JSON string is invalid with respect to PaginatedSandboxesDeprecated
    */
-  public static PaginatedSandboxes fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, PaginatedSandboxes.class);
+  public static PaginatedSandboxesDeprecated fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, PaginatedSandboxesDeprecated.class);
   }
 
   /**
-   * Convert an instance of PaginatedSandboxes to an JSON string
+   * Convert an instance of PaginatedSandboxesDeprecated to an JSON string
    *
    * @return JSON string
    */

@@ -93,7 +93,7 @@ export * from './otel-config';
 export * from './paginated-audit-logs';
 export * from './paginated-jobs';
 export * from './paginated-logs';
-export * from './paginated-sandboxes';
+export * from './paginated-sandboxes-deprecated';
 export * from './paginated-snapshots';
 export * from './paginated-traces';
 export * from './poll-jobs-response';

@@ -224,7 +224,7 @@ public class Daytona implements AutoCloseable {
             path = path + "&labels=" + urlEncodeQuery(toJson(labels));
         }
 
-        io.daytona.api.client.model.PaginatedSandboxes result = ExceptionMapper.callMain(() -> sandboxApi.listSandboxesPaginated(
+        io.daytona.api.client.model.PaginatedSandboxesDeprecated result = ExceptionMapper.callMain(() -> sandboxApi.listSandboxesPaginatedDeprecated(
                 null,
                 BigDecimal.valueOf(p),
                 BigDecimal.valueOf(l),

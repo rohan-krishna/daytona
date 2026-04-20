@@ -617,7 +617,12 @@ export class Daytona implements AsyncDisposable {
     const response = await this.sandboxApi.getSandbox(sandboxIdOrName)
     const sandboxInstance = response.data
 
-    return new Sandbox(sandboxInstance, structuredClone(this.clientConfig), Daytona.createAxiosInstance(), this.sandboxApi)
+    return new Sandbox(
+      sandboxInstance,
+      structuredClone(this.clientConfig),
+      Daytona.createAxiosInstance(),
+      this.sandboxApi,
+    )
   }
 
   /**
@@ -636,7 +641,7 @@ export class Daytona implements AsyncDisposable {
    */
   @WithInstrumentation()
   public async list(labels?: Record<string, string>, page?: number, limit?: number): Promise<PaginatedSandboxes> {
-    const response = await this.sandboxApi.listSandboxesPaginated(
+    const response = await this.sandboxApi.listSandboxesPaginatedDeprecated(
       undefined,
       page,
       limit,

@@ -63,11 +63,11 @@ import { SshAccessDto, SshAccessValidationDto } from '../dto/ssh-access.dto'
 import { VolumeService } from './volume.service'
 import { PaginatedList } from '../../common/interfaces/paginated-list.interface'
 import {
-  SandboxSortField,
-  SandboxSortDirection,
-  DEFAULT_SANDBOX_SORT_FIELD,
-  DEFAULT_SANDBOX_SORT_DIRECTION,
-} from '../dto/list-sandboxes-query.dto'
+  SandboxSortFieldDeprecated,
+  SandboxSortDirectionDeprecated,
+  DEFAULT_SANDBOX_SORT_FIELD_DEPRECATED,
+  DEFAULT_SANDBOX_SORT_DIRECTION_DEPRECATED,
+} from '../dto/list-sandboxes-query.deprecated.dto'
 import { createRangeFilter } from '../../common/utils/range-filter'
 import { LogExecution } from '../../common/decorators/log-execution.decorator'
 import {
@@ -1134,7 +1134,7 @@ export class SandboxService {
     return this.sandboxRepository.find({ where, relations: ['lastActivityAt'] })
   }
 
-  async findAll(
+  async findAllPaginatedDeprecated(
     organizationId: string,
     page = 1,
     limit = 10,
@@ -1156,8 +1156,8 @@ export class SandboxService {
       lastEventBefore?: Date
     },
     sort?: {
-      field?: SandboxSortField
-      direction?: SandboxSortDirection
+      field?: SandboxSortFieldDeprecated
+      direction?: SandboxSortDirectionDeprecated
     },
   ): Promise<PaginatedList<Sandbox>> {
     const pageNum = Number(page)
@@ -1181,8 +1181,10 @@ export class SandboxService {
       lastEventBefore,
     } = filters || {}
 
-    const { field: sortField = DEFAULT_SANDBOX_SORT_FIELD, direction: sortDirection = DEFAULT_SANDBOX_SORT_DIRECTION } =
-      sort || {}
+    const {
+      field: sortField = DEFAULT_SANDBOX_SORT_FIELD_DEPRECATED,
+      direction: sortDirection = DEFAULT_SANDBOX_SORT_DIRECTION_DEPRECATED,
+    } = sort || {}
 
     const baseFindOptions: FindOptionsWhere<Sandbox> = {
       organizationId,
@@ -1229,7 +1231,7 @@ export class SandboxService {
       where,
       relations: ['lastActivityAt'],
       order: {
-        ...(sortField === SandboxSortField.LAST_ACTIVITY_AT
+        ...(sortField === SandboxSortFieldDeprecated.LAST_ACTIVITY_AT
           ? { lastActivityAt: { lastActivityAt: { direction: sortDirection, nulls: 'LAST' } } }
           : {
               [sortField]: {
@@ -1237,7 +1239,7 @@ export class SandboxService {
                 nulls: 'LAST',
               },
             }),
-        ...(sortField !== SandboxSortField.CREATED_AT && { createdAt: 'DESC' }),
+        ...(sortField !== SandboxSortFieldDeprecated.CREATED_AT && { createdAt: 'DESC' }),
       },
       skip: (pageNum - 1) * limitNum,
       take: limitNum,

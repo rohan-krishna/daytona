@@ -7,7 +7,7 @@ import {
   SandboxState,
   SandboxApi,
   Sandbox as SandboxDto,
-  PaginatedSandboxes as PaginatedSandboxesDto,
+  PaginatedSandboxesDeprecated as PaginatedSandboxesDto,
   PortPreviewUrl,
   SandboxVolume,
   BuildInfo,

@@ -35,7 +35,7 @@ import io.daytona.api.client.model.MetricsResponse;
 import java.time.OffsetDateTime;
 import io.daytona.api.client.model.Organization;
 import io.daytona.api.client.model.PaginatedLogs;
-import io.daytona.api.client.model.PaginatedSandboxes;
+import io.daytona.api.client.model.PaginatedSandboxesDeprecated;
 import io.daytona.api.client.model.PaginatedTraces;
 import io.daytona.api.client.model.PortPreviewUrl;
 import io.daytona.api.client.model.RegionQuota;
@@ -3757,7 +3757,7 @@ public class SandboxApi {
         return localVarCall;
     }
     /**
-     * Build call for listSandboxesPaginated
+     * Build call for listSandboxesPaginatedDeprecated
      * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
      * @param page Page number of the results (optional, default to 1)
      * @param limit Number of results per page (optional, default to 100)
@@ -3787,8 +3787,10 @@ public class SandboxApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> Paginated list of all sandboxes </td><td>  -  </td></tr>
      </table>
+     * @deprecated
      */
-    public okhttp3.Call listSandboxesPaginatedCall(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback _callback) throws ApiException {
+    @Deprecated
+    public okhttp3.Call listSandboxesPaginatedDeprecatedCall(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -3913,14 +3915,15 @@ public class SandboxApi {
         return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call listSandboxesPaginatedValidateBeforeCall(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback _callback) throws ApiException {
-        return listSandboxesPaginatedCall(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order, _callback);
+    private okhttp3.Call listSandboxesPaginatedDeprecatedValidateBeforeCall(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback _callback) throws ApiException {
+        return listSandboxesPaginatedDeprecatedCall(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order, _callback);
 
     }
 
     /**
-     * List all sandboxes paginated
+     * [DEPRECATED] List all sandboxes paginated
      * 
      * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
      * @param page Page number of the results (optional, default to 1)
@@ -3942,7 +3945,7 @@ public class SandboxApi {
      * @param lastEventBefore Include items with last event before this timestamp (optional)
      * @param sort Field to sort by (optional, default to createdAt)
      * @param order Direction to sort by (optional, default to desc)
-     * @return PaginatedSandboxes
+     * @return PaginatedSandboxesDeprecated
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -3950,14 +3953,16 @@ public class SandboxApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> Paginated list of all sandboxes </td><td>  -  </td></tr>
      </table>
+     * @deprecated
      */
-    public PaginatedSandboxes listSandboxesPaginated(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order) throws ApiException {
-        ApiResponse<PaginatedSandboxes> localVarResp = listSandboxesPaginatedWithHttpInfo(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order);
+    @Deprecated
+    public PaginatedSandboxesDeprecated listSandboxesPaginatedDeprecated(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order) throws ApiException {
+        ApiResponse<PaginatedSandboxesDeprecated> localVarResp = listSandboxesPaginatedDeprecatedWithHttpInfo(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order);
         return localVarResp.getData();
     }
 
     /**
-     * List all sandboxes paginated
+     * [DEPRECATED] List all sandboxes paginated
      * 
      * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
      * @param page Page number of the results (optional, default to 1)
@@ -3979,7 +3984,7 @@ public class SandboxApi {
      * @param lastEventBefore Include items with last event before this timestamp (optional)
      * @param sort Field to sort by (optional, default to createdAt)
      * @param order Direction to sort by (optional, default to desc)
-     * @return ApiResponse&lt;PaginatedSandboxes&gt;
+     * @return ApiResponse&lt;PaginatedSandboxesDeprecated&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
@@ -3987,15 +3992,17 @@ public class SandboxApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> Paginated list of all sandboxes </td><td>  -  </td></tr>
      </table>
+     * @deprecated
      */
-    public ApiResponse<PaginatedSandboxes> listSandboxesPaginatedWithHttpInfo(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order) throws ApiException {
-        okhttp3.Call localVarCall = listSandboxesPaginatedValidateBeforeCall(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order, null);
-        Type localVarReturnType = new TypeToken<PaginatedSandboxes>(){}.getType();
+    @Deprecated
+    public ApiResponse<PaginatedSandboxesDeprecated> listSandboxesPaginatedDeprecatedWithHttpInfo(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order) throws ApiException {
+        okhttp3.Call localVarCall = listSandboxesPaginatedDeprecatedValidateBeforeCall(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order, null);
+        Type localVarReturnType = new TypeToken<PaginatedSandboxesDeprecated>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * List all sandboxes paginated (asynchronously)
+     * [DEPRECATED] List all sandboxes paginated (asynchronously)
      * 
      * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
      * @param page Page number of the results (optional, default to 1)
@@ -4026,11 +4033,13 @@ public class SandboxApi {
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
         <tr><td> 200 </td><td> Paginated list of all sandboxes </td><td>  -  </td></tr>
      </table>
+     * @deprecated
      */
-    public okhttp3.Call listSandboxesPaginatedAsync(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback<PaginatedSandboxes> _callback) throws ApiException {
+    @Deprecated
+    public okhttp3.Call listSandboxesPaginatedDeprecatedAsync(String xDaytonaOrganizationID, BigDecimal page, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regions, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback<PaginatedSandboxesDeprecated> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = listSandboxesPaginatedValidateBeforeCall(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order, _callback);
-        Type localVarReturnType = new TypeToken<PaginatedSandboxes>(){}.getType();
+        okhttp3.Call localVarCall = listSandboxesPaginatedDeprecatedValidateBeforeCall(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order, _callback);
+        Type localVarReturnType = new TypeToken<PaginatedSandboxesDeprecated>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

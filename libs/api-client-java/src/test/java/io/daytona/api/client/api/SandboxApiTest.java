@@ -22,7 +22,7 @@ import io.daytona.api.client.model.MetricsResponse;
 import java.time.OffsetDateTime;
 import io.daytona.api.client.model.Organization;
 import io.daytona.api.client.model.PaginatedLogs;
-import io.daytona.api.client.model.PaginatedSandboxes;
+import io.daytona.api.client.model.PaginatedSandboxesDeprecated;
 import io.daytona.api.client.model.PaginatedTraces;
 import io.daytona.api.client.model.PortPreviewUrl;
 import io.daytona.api.client.model.RegionQuota;
@@ -416,12 +416,12 @@ public class SandboxApiTest {
     }
 
     /**
-     * List all sandboxes paginated
+     * [DEPRECATED] List all sandboxes paginated
      *
      * @throws ApiException if the Api call fails
      */
     @Test
-    public void listSandboxesPaginatedTest() throws ApiException {
+    public void listSandboxesPaginatedDeprecatedTest() throws ApiException {
         String xDaytonaOrganizationID = null;
         BigDecimal page = null;
         BigDecimal limit = null;
@@ -442,7 +442,7 @@ public class SandboxApiTest {
         OffsetDateTime lastEventBefore = null;
         String sort = null;
         String order = null;
-        PaginatedSandboxes response = api.listSandboxesPaginated(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order);
+        PaginatedSandboxesDeprecated response = api.listSandboxesPaginatedDeprecated(xDaytonaOrganizationID, page, limit, id, name, labels, includeErroredDeleted, states, snapshots, regions, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, lastEventAfter, lastEventBefore, sort, order);
         // TODO: test validations
     }
 

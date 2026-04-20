@@ -621,7 +621,9 @@ class AsyncDaytona:
         if limit is not None and limit < 1:
             raise DaytonaValidationError("limit must be a positive integer")
 
-        response = await self._sandbox_api.list_sandboxes_paginated(labels=json.dumps(labels), page=page, limit=limit)
+        response = await self._sandbox_api.list_sandboxes_paginated_deprecated(
+            labels=json.dumps(labels), page=page, limit=limit
+        )
 
         items: list[AsyncSandbox] = []
         for sandbox in response.items:

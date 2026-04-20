@@ -28,17 +28,17 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * Model tests for PaginatedSandboxes
+ * Model tests for PaginatedSandboxesDeprecated
  */
-public class PaginatedSandboxesTest {
-    private final PaginatedSandboxes model = new PaginatedSandboxes();
+public class PaginatedSandboxesDeprecatedTest {
+    private final PaginatedSandboxesDeprecated model = new PaginatedSandboxesDeprecated();
 
     /**
-     * Model tests for PaginatedSandboxes
+     * Model tests for PaginatedSandboxesDeprecated
      */
     @Test
-    public void testPaginatedSandboxes() {
-        // TODO: test PaginatedSandboxes
+    public void testPaginatedSandboxesDeprecated() {
+        // TODO: test PaginatedSandboxesDeprecated
     }
 
     /**

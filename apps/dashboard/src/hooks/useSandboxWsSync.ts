@@ -7,7 +7,7 @@ import { useNotificationSocket } from '@/hooks/useNotificationSocket'
 import { useSelectedOrganization } from '@/hooks/useSelectedOrganization'
 import { getSandboxesQueryKey } from '@/hooks/useSandboxes'
 import { queryKeys } from '@/hooks/queries/queryKeys'
-import { PaginatedSandboxes, Sandbox, SandboxDesiredState, SandboxState } from '@daytona/api-client'
+import { PaginatedSandboxesDeprecated, Sandbox, SandboxDesiredState, SandboxState } from '@daytona/api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 
@@ -27,7 +27,7 @@ export function useSandboxWsSync({ sandboxId, refetchOnCreate = false }: UseSand
     const orgId = selectedOrganization.id
 
     const updateStateInListCache = (targetId: string, state: SandboxState) => {
-      queryClient.setQueriesData<PaginatedSandboxes>({ queryKey: getSandboxesQueryKey(orgId) }, (oldData) => {
+      queryClient.setQueriesData<PaginatedSandboxesDeprecated>({ queryKey: getSandboxesQueryKey(orgId) }, (oldData) => {
         if (!oldData) return oldData
         return {
           ...oldData,

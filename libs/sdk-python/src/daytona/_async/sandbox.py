@@ -8,7 +8,7 @@ from deprecated import deprecated
 from pydantic import ConfigDict, PrivateAttr
 
 from daytona_api_client_async import BuildInfo, CreateSandboxSnapshot, ForkSandbox
-from daytona_api_client_async import PaginatedSandboxes as PaginatedSandboxesDto
+from daytona_api_client_async import PaginatedSandboxesDeprecated as PaginatedSandboxesDto
 from daytona_api_client_async import PortPreviewUrl, ResizeSandbox
 from daytona_api_client_async import Sandbox as SandboxDto
 from daytona_api_client_async import (
