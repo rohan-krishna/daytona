@@ -26,6 +26,7 @@ export default defineConfig({
   integrations: [
     react(),
     starlight({
+      title: 'Daytona',
       prerender: false,
       pagefind: false,
       favicon: '/favicon.ico',
