@@ -11,9 +11,6 @@ import {
   getCoreRowModel,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   VisibilityState,
 } from '@tanstack/react-table'
 import { useMemo, useState, useEffect } from 'react'
@@ -38,6 +35,11 @@ interface UseSandboxTableProps {
   handleCreateSshAccess: (id: string) => void
   handleRevokeSshAccess: (id: string) => void
   handleScreenRecordings: (id: string) => void
+  pageSize: number
+  sorting: SandboxSorting
+  onSortingChange: (sorting: SandboxSorting) => void
+  filters: SandboxFilters
+  onFiltersChange: (filters: SandboxFilters) => void
   regionsData: Region[]
   handleRecover: (id: string) => void
   getRegionName: (regionId: string) => string | undefined
@@ -60,6 +62,11 @@ export function useSandboxTable({
   handleCreateSshAccess,
   handleRevokeSshAccess,
   handleScreenRecordings,
+  pageSize,
+  sorting,
+  onSortingChange,
+  filters,
+  onFiltersChange,
   regionsData,
   handleRecover,
   getRegionName,
@@ -161,11 +168,14 @@ export function useSandboxTable({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      pagination: {
+        pageIndex: 0,
+        pageSize: pageSize,
+      },
     },
     onColumnVisibilityChange: setColumnVisibility,
     defaultColumn: {

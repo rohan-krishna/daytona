@@ -168,6 +168,7 @@ lib/daytona_api_client/models/sandbox_state.rb
 lib/daytona_api_client/models/sandbox_volume.rb
 lib/daytona_api_client/models/screenshot_response.rb
 lib/daytona_api_client/models/search_files_response.rb
+lib/daytona_api_client/models/search_sandboxes_result.rb
 lib/daytona_api_client/models/send_webhook_dto.rb
 lib/daytona_api_client/models/session.rb
 lib/daytona_api_client/models/session_execute_request.rb

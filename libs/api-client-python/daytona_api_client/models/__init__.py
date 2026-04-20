@@ -163,6 +163,7 @@ if TYPE_CHECKING:
     from daytona_api_client.models.sandbox_volume import SandboxVolume
     from daytona_api_client.models.screenshot_response import ScreenshotResponse
     from daytona_api_client.models.search_files_response import SearchFilesResponse
+    from daytona_api_client.models.search_sandboxes_result import SearchSandboxesResult
     from daytona_api_client.models.send_webhook_dto import SendWebhookDto
     from daytona_api_client.models.session import Session
     from daytona_api_client.models.session_execute_request import SessionExecuteRequest
@@ -345,6 +346,7 @@ _DYNAMIC_IMPORTS: dict[str, str] = {
     "SandboxVolume": "daytona_api_client.models.sandbox_volume",
     "ScreenshotResponse": "daytona_api_client.models.screenshot_response",
     "SearchFilesResponse": "daytona_api_client.models.search_files_response",
+    "SearchSandboxesResult": "daytona_api_client.models.search_sandboxes_result",
     "SendWebhookDto": "daytona_api_client.models.send_webhook_dto",
     "Session": "daytona_api_client.models.session",
     "SessionExecuteRequest": "daytona_api_client.models.session_execute_request",

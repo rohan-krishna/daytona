@@ -5,6 +5,7 @@
 
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -106,6 +107,10 @@ import {
 import { SandboxLookupCacheInvalidationService } from './sandbox-lookup-cache-invalidation.service'
 import { Region } from '../../region/entities/region.entity'
 import { SandboxActivityService } from './sandbox-activity.service'
+import { ListSandboxesResponseDto } from '../dto/list-sandboxes-response.dto'
+import { ListSandboxesQueryDto } from '../dto/list-sandboxes-query.dto'
+import { SANDBOX_SEARCH_ADAPTER } from '../constants/sandbox-tokens'
+import { SandboxSearchAdapter } from '../interfaces/sandbox-search.interface'
 
 const DEFAULT_CPU = 1
 const DEFAULT_MEMORY = 1
@@ -142,6 +147,8 @@ export class SandboxService {
     private readonly dockerRegistryService: DockerRegistryService,
     @InjectRepository(SandboxFork)
     private readonly sandboxForkRepository: Repository<SandboxFork>,
+    @Inject(SANDBOX_SEARCH_ADAPTER)
+    private readonly sandboxSearchAdapter: SandboxSearchAdapter,
   ) {}
 
   protected getLockKey(id: string): string {
@@ -1250,6 +1257,74 @@ export class SandboxService {
       total,
       page: pageNum,
       totalPages: Math.ceil(total / limitNum),
+    }
+  }
+
+  /**
+   * Search sandboxes
+   * @param organizationId - The ID of the organization
+   * @param query - The query parameters
+   * @returns The paginated list of sandboxes. If cursor is omitted from the query, newest sandboxes will be returned.
+   * @throws BadRequestError if the cursor is invalid
+   */
+  async search(organizationId: string, query: ListSandboxesQueryDto): Promise<ListSandboxesResponseDto> {
+    let parsedLabels: { [key: string]: string } | undefined
+    if (query.labels) {
+      try {
+        parsedLabels = JSON.parse(query.labels)
+      } catch {
+        throw new BadRequestError('Invalid labels JSON format')
+      }
+    }
+
+    const result = await this.sandboxSearchAdapter.search({
+      filters: {
+        organizationId,
+        idPrefix: query.id,
+        namePrefix: query.name,
+        labels: parsedLabels,
+        includeErroredDeleted: query.includeErroredDeleted,
+        states: query.states,
+        snapshots: query.snapshots,
+        regionIds: query.regionIds,
+        minCpu: query.minCpu,
+        maxCpu: query.maxCpu,
+        minMemoryGiB: query.minMemoryGiB,
+        maxMemoryGiB: query.maxMemoryGiB,
+        minDiskGiB: query.minDiskGiB,
+        maxDiskGiB: query.maxDiskGiB,
+        isPublic: query.isPublic,
+        isRecoverable: query.isRecoverable,
+        createdAtAfter: query.createdAtAfter,
+        createdAtBefore: query.createdAtBefore,
+        lastEventAfter: query.lastEventAfter,
+        lastEventBefore: query.lastEventBefore,
+      },
+      pagination: {
+        cursor: query.cursor,
+        limit: query.limit,
+      },
+      sort: {
+        field: query.sort,
+        direction: query.order,
+      },
+    })
+
+    const targets = [...new Set(result.items.map((item) => item.target))]
+    const toolboxProxyUrlMap = await this.resolveToolboxProxyUrls(targets)
+
+    return {
+      items: result.items.map((item) => {
+        const url = toolboxProxyUrlMap.get(item.target)
+        if (!url) {
+          throw new NotFoundException(`Toolbox proxy URL not resolved for region ${item.target}`)
+        }
+        return {
+          ...item,
+          toolboxProxyUrl: url,
+        } satisfies SandboxDto
+      }),
+      nextCursor: result.nextCursor,
     }
   }
 

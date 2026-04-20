@@ -21,8 +21,8 @@ import { AnimatePresence } from 'motion/react'
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCommandPaletteActions } from '../CommandPalette'
-import { Pagination } from '../Pagination'
 import { SelectionToast } from '../SelectionToast'
+import { CursorPagination } from '../CursorPagination'
 import { TableEmptyState } from '../TableEmptyState'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { BulkAction, BulkActionAlertDialog } from './BulkActionAlertDialog'
@@ -55,6 +55,16 @@ export function SandboxTable({
   handleRevokeSshAccess,
   handleScreenRecordings,
   onRowClick,
+  pageSize,
+  hasNextPage,
+  hasPreviousPage,
+  onNextPage,
+  onPreviousPage,
+  onPageSizeChange,
+  sorting,
+  onSortingChange,
+  filters,
+  onFiltersChange,
   handleRecover,
   handleCreateSnapshot,
   handleFork,
@@ -80,6 +90,12 @@ export function SandboxTable({
     handleCreateSshAccess,
     handleRevokeSshAccess,
     handleScreenRecordings,
+    pageSize,
+    sorting,
+    onSortingChange,
+    filters,
+    onFiltersChange,
+    regionsData,
     handleRecover,
     getRegionName,
     handleCreateSnapshot,
@@ -258,7 +274,15 @@ export function SandboxTable({
       </Table>
 
       <div className="flex items-center justify-end relative">
-        <Pagination className="pb-2 pt-6" table={table} selectionEnabled={deletePermitted} entityName="Sandboxes" />
+        <CursorPagination
+          className="pb-2 pt-6"
+          pageSize={pageSize}
+          onPageSizeChange={onPageSizeChange}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          onNextPage={onNextPage}
+          onPreviousPage={onPreviousPage}
+        />
 
         <AnimatePresence>
           {hasSelection && (

@@ -50,6 +50,181 @@ const Sandboxes: React.FC = () => {
   const { user } = useAuth()
   const { notificationSocket } = useNotificationSocket()
   const config = useConfig()
+  const queryClient = useQueryClient()
+  const { selectedOrganization, authenticatedUserOrganizationMember } = useSelectedOrganization()
+
+  // Pagination
+
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const [cursor, setCursor] = useState<string | undefined>(undefined)
+  const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([])
+
+  const resetCursor = useCallback(() => {
+    setCursor(undefined)
+    setCursorHistory([])
+  }, [])
+
+  const handleNextPage = useCallback(
+    (nextCursor: string | null) => {
+      if (nextCursor) {
+        setCursorHistory((prev) => [...prev, cursor])
+        setCursor(nextCursor)
+      }
+    },
+    [cursor],
+  )
+
+  const handlePreviousPage = useCallback(() => {
+    if (cursorHistory.length > 0) {
+      const newHistory = [...cursorHistory]
+      const previousCursor = newHistory.pop()
+      setCursorHistory(newHistory)
+      setCursor(previousCursor)
+    }
+  }, [cursorHistory])
+
+  const handlePageSizeChange = useCallback(
+    (newPageSize: number) => {
+      setPageSize(newPageSize)
+      resetCursor()
+    },
+    [resetCursor],
+  )
+
+  // Filters
+
+  const [filters, setFilters] = useState<SandboxFilters>({})
+
+  const handleFiltersChange = useCallback(
+    (newFilters: SandboxFilters) => {
+      setFilters(newFilters)
+      resetCursor()
+    },
+    [resetCursor],
+  )
+
+  // Sorting
+
+  const [sorting, setSorting] = useState<SandboxSorting>(DEFAULT_SANDBOX_SORTING)
+
+  const handleSortingChange = useCallback(
+    (newSorting: SandboxSorting) => {
+      setSorting(newSorting)
+      resetCursor()
+    },
+    [resetCursor],
+  )
+
+  // Sandboxes Data
+
+  const queryParams = useMemo<SandboxQueryParams>(
+    () => ({
+      cursor: cursor,
+      limit: pageSize,
+      filters: filters,
+      sorting: sorting,
+    }),
+    [cursor, pageSize, filters, sorting],
+  )
+
+  const baseQueryKey = useMemo<QueryKey>(
+    () => getSandboxesQueryKey(selectedOrganization?.id),
+    [selectedOrganization?.id],
+  )
+
+  const queryKey = useMemo<QueryKey>(
+    () => getSandboxesQueryKey(selectedOrganization?.id, queryParams),
+    [selectedOrganization?.id, queryParams],
+  )
+
+  const {
+    data: sandboxesData,
+    isLoading: sandboxesDataIsLoading,
+    error: sandboxesDataError,
+    refetch: refetchSandboxesData,
+  } = useSandboxes(queryKey, queryParams)
+
+  useEffect(() => {
+    if (sandboxesDataError) {
+      handleApiError(sandboxesDataError, 'Failed to fetch sandboxes')
+    }
+  }, [sandboxesDataError])
+
+  const updateSandboxInCache = useCallback(
+    (sandboxId: string, updates: Partial<Sandbox>) => {
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        if (!oldData) return oldData
+        return {
+          ...oldData,
+          items: oldData.items.map((sandbox: Sandbox) =>
+            sandbox.id === sandboxId ? { ...sandbox, ...updates } : sandbox,
+          ),
+        }
+      })
+    },
+    [queryClient, queryKey],
+  )
+
+  /**
+   * Marks all sandbox queries for this organization as stale.
+   *
+   * Useful when sandbox event occurs and we don't have a good way of knowing for which combination of query parameters the sandbox would be shown.
+   *
+   * @param shouldRefetchActiveQueries If true, only active queries will be refetched. Otherwise, no queries will be refetched.
+   */
+  const markAllSandboxQueriesAsStale = useCallback(
+    async (shouldRefetchActiveQueries = false) => {
+      queryClient.invalidateQueries({
+        queryKey: baseQueryKey,
+        refetchType: shouldRefetchActiveQueries ? 'active' : 'none',
+      })
+    },
+    [queryClient, baseQueryKey],
+  )
+
+  /**
+   * Aborts all outgoing refetches for the provided key.
+   *
+   * Useful for preventing refetches from overwriting optimistic updates.
+   *
+   * @param queryKey
+   */
+  const cancelQueryRefetches = useCallback(
+    async (queryKey: QueryKey) => {
+      queryClient.cancelQueries({ queryKey })
+    },
+    [queryClient],
+  )
+
+  // Go to previous page if there are no items on the current page
+
+  useEffect(() => {
+    if (sandboxesData?.items.length === 0 && cursorHistory.length > 0) {
+      handlePreviousPage()
+    }
+  }, [sandboxesData?.items.length, cursorHistory.length, handlePreviousPage])
+
+  // Ephemeral Sandbox States
+
+  const [sandboxIsLoading, setSandboxIsLoading] = useState<Record<string, boolean>>({})
+  const [sandboxStateIsTransitioning, setSandboxStateIsTransitioning] = useState<Record<string, boolean>>({}) // display transition animation
+
+  // Manual Refreshing
+
+  const [sandboxDataIsRefreshing, setSandboxDataIsRefreshing] = useState(false)
+
+  const handleRefresh = useCallback(async () => {
+    setSandboxDataIsRefreshing(true)
+    try {
+      await refetchSandboxesData()
+    } catch (error) {
+      handleApiError(error, 'Failed to refresh sandboxes')
+    } finally {
+      setSandboxDataIsRefreshing(false)
+    }
+  }, [refetchSandboxesData])
+
+  // Delete Sandbox Dialog
 
   const [sandboxes, setSandboxes] = useState<Sandbox[]>([])
   const [snapshots, setSnapshots] = useState<SnapshotDto[]>([])
@@ -180,9 +355,14 @@ const Sandboxes: React.FC = () => {
 
   useEffect(() => {
     const handleSandboxCreatedEvent = (sandbox: Sandbox) => {
-      if (!sandboxes.some((s) => s.id === sandbox.id)) {
-        setSandboxes((prev) => [sandbox, ...prev])
-      }
+      const isFirstPage = cursor === undefined
+      const isDefaultFilters = Object.keys(filters).length === 0
+      const isDefaultSorting =
+        sorting.field === DEFAULT_SANDBOX_SORTING.field && sorting.direction === DEFAULT_SANDBOX_SORTING.direction
+
+      const shouldRefetchActiveQueries = isFirstPage && isDefaultFilters && isDefaultSorting
+
+      markAllSandboxQueriesAsStale(shouldRefetchActiveQueries)
     }
 
     const handleSandboxStateUpdatedEvent = (data: {
@@ -226,7 +406,17 @@ const Sandboxes: React.FC = () => {
       notificationSocket.off('sandbox.state.updated', handleSandboxStateUpdatedEvent)
       notificationSocket.off('sandbox.desired-state.updated', handleSandboxDesiredStateUpdatedEvent)
     }
-  }, [notificationSocket, sandboxes])
+  }, [
+    cursor,
+    filters,
+    markAllSandboxQueriesAsStale,
+    notificationSocket,
+    performSandboxStateOptimisticUpdate,
+    sorting.direction,
+    sorting.field,
+  ])
+
+  // Sandbox Action Handlers
 
   const handleStart = async (id: string) => {
     setLoadingSandboxes((prev) => ({ ...prev, [id]: true }))
@@ -795,9 +985,16 @@ const Sandboxes: React.FC = () => {
             setSelectedSandbox(sandbox)
             setShowSandboxDetails(true)
           }}
-          loadingSnapshots={loadingSnapshots}
-          regionsData={regionsData}
-          regionsDataIsLoading={regionsDataIsLoading}
+          pageSize={pageSize}
+          hasNextPage={!!sandboxesData?.nextCursor}
+          hasPreviousPage={cursorHistory.length > 0}
+          onNextPage={() => handleNextPage(sandboxesData?.nextCursor ?? null)}
+          onPreviousPage={handlePreviousPage}
+          onPageSizeChange={handlePageSizeChange}
+          sorting={sorting}
+          onSortingChange={handleSortingChange}
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
           handleRecover={handleRecover}
           getRegionName={getRegionName}
           handleScreenRecordings={handleScreenRecordings}

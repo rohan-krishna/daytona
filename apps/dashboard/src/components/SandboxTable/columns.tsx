@@ -166,10 +166,10 @@ export function getColumns({
     {
       id: 'state',
       size: 140,
-      enableSorting: true,
+      enableSorting: false,
       enableHiding: false,
-      header: ({ column }) => {
-        return <SortableHeader column={column} label="State" />
+      header: () => {
+        return <span>State</span>
       },
       cell: ({ row }) => (
         <div className="w-full truncate">
@@ -196,10 +196,10 @@ export function getColumns({
     {
       id: 'snapshot',
       size: 150,
-      enableSorting: true,
+      enableSorting: false,
       enableHiding: false,
-      header: ({ column }) => {
-        return <SortableHeader column={column} label="Snapshot" />
+      header: () => {
+        return <span>Snapshot</span>
       },
       cell: ({ row }) => {
         return (
@@ -218,10 +218,10 @@ export function getColumns({
     {
       id: 'region',
       size: 100,
-      enableSorting: true,
+      enableSorting: false,
       enableHiding: false,
-      header: ({ column }) => {
-        return <SortableHeader column={column} label="Region" dataState="sortable" />
+      header: () => {
+        return <span>Region</span>
       },
       cell: ({ row }) => {
         return (
@@ -321,7 +321,7 @@ export function getColumns({
       enableSorting: true,
       enableHiding: false,
       header: ({ column }) => {
-        return <SortableHeader column={column} label="Created At" />
+        return <SortableHeader column={column} label="Created" />
       },
       accessorFn: (row) => (row.createdAt ? new Date(row.createdAt) : new Date()),
       cell: ({ row }) => {
@@ -361,6 +361,17 @@ export function getColumns({
         </div>
       ),
     },
+    // Hidden filter-only columns
+    {
+      id: 'isPublic',
+      enableHiding: false,
+      enableSorting: false,
+    },
+    {
+      id: 'isRecoverable',
+      enableHiding: false,
+      enableSorting: false,
+    },
   ]
 
   return columns
@@ -381,5 +392,5 @@ function getDisplayName(sandbox: Sandbox): string {
 }
 
 function getLastEvent(sandbox: Sandbox): { date: Date; relativeTimeString: string } {
-  return getRelativeTimeString(sandbox.lastActivityAt ?? sandbox.updatedAt)
+  return getRelativeTimeString(sandbox.lastActivityAt)
 }
