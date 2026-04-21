@@ -35,6 +35,7 @@ export class SandboxTypeormSearchAdapter implements SandboxSearchAdapter {
     const sortDirection = this.getSortDirectionMapping(sort.direction)
 
     const qb = this.sandboxRepository.createQueryBuilder('sandbox')
+    qb.leftJoinAndSelect('sandbox.lastActivityAt', 'lastActivity')
 
     // Base filters
     qb.andWhere('sandbox.organizationId = :organizationId', { organizationId: filters.organizationId })
@@ -87,10 +88,10 @@ export class SandboxTypeormSearchAdapter implements SandboxSearchAdapter {
       qb.andWhere('sandbox.createdAt <= :createdAtBefore', { createdAtBefore: filters.createdAtBefore })
     }
     if (filters.lastEventAfter) {
-      qb.andWhere('sandbox.lastActivityAt >= :lastEventAfter', { lastEventAfter: filters.lastEventAfter })
+      qb.andWhere('lastActivity.lastActivityAt >= :lastEventAfter', { lastEventAfter: filters.lastEventAfter })
     }
     if (filters.lastEventBefore) {
-      qb.andWhere('sandbox.lastActivityAt <= :lastEventBefore', { lastEventBefore: filters.lastEventBefore })
+      qb.andWhere('lastActivity.lastActivityAt <= :lastEventBefore', { lastEventBefore: filters.lastEventBefore })
     }
 
     // State filtering with error state handling
@@ -133,10 +134,10 @@ export class SandboxTypeormSearchAdapter implements SandboxSearchAdapter {
 
       qb.andWhere(
         new Brackets((cursorQb) => {
-          cursorQb.where(`sandbox.${sortField} ${op} :cursorSortValue`, { cursorSortValue: sortValue }).orWhere(
+          cursorQb.where(`${sortField} ${op} :cursorSortValue`, { cursorSortValue: sortValue }).orWhere(
             new Brackets((tieBreaker) => {
               tieBreaker
-                .where(`sandbox.${sortField} = :cursorSortValue`, { cursorSortValue: sortValue })
+                .where(`${sortField} = :cursorSortValue`, { cursorSortValue: sortValue })
                 .andWhere(`sandbox.id ${op} :cursorId`, { cursorId: id })
             }),
           )
@@ -145,7 +146,7 @@ export class SandboxTypeormSearchAdapter implements SandboxSearchAdapter {
     }
 
     // Sorting with id as tie-breaker
-    qb.orderBy(`sandbox.${sortField}`, sortDirection as 'ASC' | 'DESC', 'NULLS LAST')
+    qb.orderBy(sortField, sortDirection as 'ASC' | 'DESC', 'NULLS LAST')
     qb.addOrderBy('sandbox.id', sortDirection as 'ASC' | 'DESC')
 
     // Fetch one extra to determine if there are more items
@@ -171,12 +172,12 @@ export class SandboxTypeormSearchAdapter implements SandboxSearchAdapter {
 
   private getSortFieldMapping(sortField: SandboxSearchSortField): string {
     const fieldMapping: Record<SandboxSearchSortField, string> = {
-      [SandboxSearchSortField.NAME]: 'name',
-      [SandboxSearchSortField.CPU]: 'cpu',
-      [SandboxSearchSortField.MEMORY]: 'mem',
-      [SandboxSearchSortField.DISK]: 'disk',
-      [SandboxSearchSortField.LAST_ACTIVITY_AT]: 'lastActivityAt',
-      [SandboxSearchSortField.CREATED_AT]: 'createdAt',
+      [SandboxSearchSortField.NAME]: 'sandbox.name',
+      [SandboxSearchSortField.CPU]: 'sandbox.cpu',
+      [SandboxSearchSortField.MEMORY]: 'sandbox.mem',
+      [SandboxSearchSortField.DISK]: 'sandbox.disk',
+      [SandboxSearchSortField.LAST_ACTIVITY_AT]: 'lastActivity.lastActivityAt',
+      [SandboxSearchSortField.CREATED_AT]: 'sandbox.createdAt',
     }
     return fieldMapping[sortField]
   }
@@ -190,13 +191,29 @@ export class SandboxTypeormSearchAdapter implements SandboxSearchAdapter {
   }
 
   private encodeCursor(sandbox: Sandbox, sortField: SandboxSearchSortField): string {
-    const field = this.getSortFieldMapping(sortField)
-    const sortValue = sandbox[field as keyof Sandbox]
+    const sortValue = this.getSortValue(sandbox, sortField)
     const cursorData = {
       sortValue: sortValue instanceof Date ? sortValue.toISOString() : sortValue,
       id: sandbox.id,
     }
     return Buffer.from(JSON.stringify(cursorData)).toString('base64')
+  }
+
+  private getSortValue(sandbox: Sandbox, sortField: SandboxSearchSortField): unknown {
+    switch (sortField) {
+      case SandboxSearchSortField.NAME:
+        return sandbox.name
+      case SandboxSearchSortField.CPU:
+        return sandbox.cpu
+      case SandboxSearchSortField.MEMORY:
+        return sandbox.mem
+      case SandboxSearchSortField.DISK:
+        return sandbox.disk
+      case SandboxSearchSortField.LAST_ACTIVITY_AT:
+        return sandbox.lastActivityAt?.lastActivityAt
+      case SandboxSearchSortField.CREATED_AT:
+        return sandbox.createdAt
+    }
   }
 
   private decodeCursor(cursor: string): { sortValue: any; id: string } {

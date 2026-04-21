@@ -87,6 +87,7 @@ model_keyboard_hotkey_request.go
 model_keyboard_press_request.go
 model_keyboard_type_request.go
 model_list_branch_response.go
+model_list_sandboxes_response.go
 model_log_entry.go
 model_lsp_completion_params.go
 model_lsp_document_request.go
@@ -165,7 +166,6 @@ model_sandbox_state.go
 model_sandbox_volume.go
 model_screenshot_response.go
 model_search_files_response.go
-model_search_sandboxes_result.go
 model_send_webhook_dto.go
 model_session.go
 model_session_execute_request.go

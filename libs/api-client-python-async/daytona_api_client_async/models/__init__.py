@@ -85,6 +85,7 @@ if TYPE_CHECKING:
     from daytona_api_client_async.models.keyboard_press_request import KeyboardPressRequest
     from daytona_api_client_async.models.keyboard_type_request import KeyboardTypeRequest
     from daytona_api_client_async.models.list_branch_response import ListBranchResponse
+    from daytona_api_client_async.models.list_sandboxes_response import ListSandboxesResponse
     from daytona_api_client_async.models.log_entry import LogEntry
     from daytona_api_client_async.models.lsp_completion_params import LspCompletionParams
     from daytona_api_client_async.models.lsp_document_request import LspDocumentRequest
@@ -163,7 +164,6 @@ if TYPE_CHECKING:
     from daytona_api_client_async.models.sandbox_volume import SandboxVolume
     from daytona_api_client_async.models.screenshot_response import ScreenshotResponse
     from daytona_api_client_async.models.search_files_response import SearchFilesResponse
-    from daytona_api_client_async.models.search_sandboxes_result import SearchSandboxesResult
     from daytona_api_client_async.models.send_webhook_dto import SendWebhookDto
     from daytona_api_client_async.models.session import Session
     from daytona_api_client_async.models.session_execute_request import SessionExecuteRequest
@@ -268,6 +268,7 @@ _DYNAMIC_IMPORTS: dict[str, str] = {
     "KeyboardPressRequest": "daytona_api_client_async.models.keyboard_press_request",
     "KeyboardTypeRequest": "daytona_api_client_async.models.keyboard_type_request",
     "ListBranchResponse": "daytona_api_client_async.models.list_branch_response",
+    "ListSandboxesResponse": "daytona_api_client_async.models.list_sandboxes_response",
     "LogEntry": "daytona_api_client_async.models.log_entry",
     "LspCompletionParams": "daytona_api_client_async.models.lsp_completion_params",
     "LspDocumentRequest": "daytona_api_client_async.models.lsp_document_request",
@@ -346,7 +347,6 @@ _DYNAMIC_IMPORTS: dict[str, str] = {
     "SandboxVolume": "daytona_api_client_async.models.sandbox_volume",
     "ScreenshotResponse": "daytona_api_client_async.models.screenshot_response",
     "SearchFilesResponse": "daytona_api_client_async.models.search_files_response",
-    "SearchSandboxesResult": "daytona_api_client_async.models.search_sandboxes_result",
     "SendWebhookDto": "daytona_api_client_async.models.send_webhook_dto",
     "Session": "daytona_api_client_async.models.session",
     "SessionExecuteRequest": "daytona_api_client_async.models.session_execute_request",

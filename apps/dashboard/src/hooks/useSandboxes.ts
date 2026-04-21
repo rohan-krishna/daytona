@@ -7,20 +7,24 @@ import { QueryKey, useQuery } from '@tanstack/react-query'
 import { useApi } from '@/hooks/useApi'
 import { useSelectedOrganization } from '@/hooks/useSelectedOrganization'
 import {
-  SearchSandboxesOrderEnum,
-  SearchSandboxesSortEnum,
-  SearchSandboxesStatesEnum,
-  SearchSandboxesResult,
+  ListSandboxesOrderEnum,
+  ListSandboxesSortEnum,
+  ListSandboxesStatesEnum,
+  ListSandboxesResponse,
 } from '@daytona/api-client'
 
 export interface SandboxFilters {
   name?: string
   labels?: Record<string, string>
   includeErroredDeleted?: boolean
-  states?: SearchSandboxesStatesEnum[]
+  states?: ListSandboxesStatesEnum[]
   snapshots?: string[]
   regions?: string[]
+  minCpu?: number
+  maxCpu?: number
+  minMemoryGiB?: number
   maxMemoryGiB?: number
+  minDiskGiB?: number
   maxDiskGiB?: number
   lastEventAfter?: Date
   lastEventBefore?: Date
@@ -31,13 +35,13 @@ export interface SandboxFilters {
 }
 
 export interface SandboxSorting {
-  field?: SearchSandboxesSortEnum
-  direction?: SearchSandboxesOrderEnum
+  field?: ListSandboxesSortEnum
+  direction?: ListSandboxesOrderEnum
 }
 
 export const DEFAULT_SANDBOX_SORTING: SandboxSorting = {
-  field: SearchSandboxesSortEnum.LAST_ACTIVITY_AT,
-  direction: SearchSandboxesOrderEnum.DESC,
+  field: ListSandboxesSortEnum.LAST_ACTIVITY_AT,
+  direction: ListSandboxesOrderEnum.DESC,
 }
 
 export interface SandboxQueryParams {
@@ -68,7 +72,7 @@ export function useSandboxes(queryKey: QueryKey, params: SandboxQueryParams) {
   const { sandboxApi } = useApi()
   const { selectedOrganization } = useSelectedOrganization()
 
-  return useQuery<SearchSandboxesResult>({
+  return useQuery<ListSandboxesResponse>({
     queryKey,
     queryFn: async () => {
       if (!selectedOrganization) {
@@ -77,7 +81,7 @@ export function useSandboxes(queryKey: QueryKey, params: SandboxQueryParams) {
 
       const { cursor, limit, filters = {}, sorting = {} } = params
 
-      const searchResponse = await sandboxApi.searchSandboxes(
+      const listResponse = await sandboxApi.listSandboxes(
         selectedOrganization.id,
         cursor,
         limit,
@@ -104,7 +108,7 @@ export function useSandboxes(queryKey: QueryKey, params: SandboxQueryParams) {
         sorting.direction,
       )
 
-      return searchResponse.data
+      return listResponse.data
     },
     enabled: !!selectedOrganization,
     staleTime: 1000 * 10, // 10 seconds

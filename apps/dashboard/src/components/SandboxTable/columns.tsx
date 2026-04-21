@@ -13,9 +13,6 @@ import { Checkbox } from '../ui/checkbox'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { SandboxState as SandboxStateComponent } from './SandboxState'
 import { SandboxTableActions } from './SandboxTableActions'
-import { STATE_PRIORITY_ORDER } from './constants'
-import { ResourceFilterValue } from './filters/ResourceFilter'
-import { arrayIncludesFilter, arrayIntersectionFilter, resourceRangeFilter, dateRangeFilter } from './filters/utils'
 
 interface SortableHeaderProps {
   column: any
@@ -181,17 +178,6 @@ export function getColumns({
         </div>
       ),
       accessorKey: 'state',
-      sortingFn: (rowA, rowB) => {
-        const stateA = rowA.original.state || SandboxState.UNKNOWN
-        const stateB = rowB.original.state || SandboxState.UNKNOWN
-
-        if (stateA === stateB) {
-          return 0
-        }
-
-        return STATE_PRIORITY_ORDER[stateA] - STATE_PRIORITY_ORDER[stateB]
-      },
-      filterFn: (row, id, value) => arrayIncludesFilter(row, id, value),
     },
     {
       id: 'snapshot',
@@ -213,7 +199,6 @@ export function getColumns({
         )
       },
       accessorKey: 'snapshot',
-      filterFn: (row, id, value) => arrayIncludesFilter(row, id, value),
     },
     {
       id: 'region',
@@ -231,7 +216,6 @@ export function getColumns({
         )
       },
       accessorKey: 'target',
-      filterFn: (row, id, value) => arrayIncludesFilter(row, id, value),
     },
     {
       id: 'resources',
@@ -258,7 +242,6 @@ export function getColumns({
           </div>
         )
       },
-      filterFn: (row, id, value: ResourceFilterValue) => resourceRangeFilter(row, value),
     },
     {
       id: 'labels',
@@ -294,7 +277,6 @@ export function getColumns({
         )
       },
       accessorFn: (row) => Object.entries(row.labels ?? {}).map(([key, value]) => `${key}: ${value}`),
-      filterFn: (row, id, value) => arrayIntersectionFilter(row, id, value),
     },
     {
       id: 'lastEvent',
@@ -304,7 +286,6 @@ export function getColumns({
       header: ({ column }) => {
         return <SortableHeader column={column} label="Last Event" />
       },
-      filterFn: (row, id, value) => dateRangeFilter(row, id, value),
       accessorFn: (row) => getLastEvent(row).date,
       cell: ({ row }) => {
         const lastEvent = getLastEvent(row.original)
@@ -361,7 +342,6 @@ export function getColumns({
         </div>
       ),
     },
-    // Hidden filter-only columns
     {
       id: 'isPublic',
       enableHiding: false,

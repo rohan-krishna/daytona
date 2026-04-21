@@ -27,17 +27,17 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * Model tests for SearchSandboxesResult
+ * Model tests for ListSandboxesResponse
  */
-public class SearchSandboxesResultTest {
-    private final SearchSandboxesResult model = new SearchSandboxesResult();
+public class ListSandboxesResponseTest {
+    private final ListSandboxesResponse model = new ListSandboxesResponse();
 
     /**
-     * Model tests for SearchSandboxesResult
+     * Model tests for ListSandboxesResponse
      */
     @Test
-    public void testSearchSandboxesResult() {
-        // TODO: test SearchSandboxesResult
+    public void testListSandboxesResponse() {
+        // TODO: test ListSandboxesResponse
     }
 
     /**

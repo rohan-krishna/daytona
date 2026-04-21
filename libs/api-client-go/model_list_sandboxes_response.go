@@ -16,11 +16,11 @@ import (
 	"fmt"
 )
 
-// checks if the SearchSandboxesResult type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &SearchSandboxesResult{}
+// checks if the ListSandboxesResponse type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &ListSandboxesResponse{}
 
-// SearchSandboxesResult struct for SearchSandboxesResult
-type SearchSandboxesResult struct {
+// ListSandboxesResponse struct for ListSandboxesResponse
+type ListSandboxesResponse struct {
 	// List of results for the current page
 	Items []Sandbox `json:"items"`
 	// Cursor for the next page of results
@@ -28,29 +28,29 @@ type SearchSandboxesResult struct {
 	AdditionalProperties map[string]interface{}
 }
 
-type _SearchSandboxesResult SearchSandboxesResult
+type _ListSandboxesResponse ListSandboxesResponse
 
-// NewSearchSandboxesResult instantiates a new SearchSandboxesResult object
+// NewListSandboxesResponse instantiates a new ListSandboxesResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewSearchSandboxesResult(items []Sandbox, nextCursor NullableString) *SearchSandboxesResult {
-	this := SearchSandboxesResult{}
+func NewListSandboxesResponse(items []Sandbox, nextCursor NullableString) *ListSandboxesResponse {
+	this := ListSandboxesResponse{}
 	this.Items = items
 	this.NextCursor = nextCursor
 	return &this
 }
 
-// NewSearchSandboxesResultWithDefaults instantiates a new SearchSandboxesResult object
+// NewListSandboxesResponseWithDefaults instantiates a new ListSandboxesResponse object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewSearchSandboxesResultWithDefaults() *SearchSandboxesResult {
-	this := SearchSandboxesResult{}
+func NewListSandboxesResponseWithDefaults() *ListSandboxesResponse {
+	this := ListSandboxesResponse{}
 	return &this
 }
 
 // GetItems returns the Items field value
-func (o *SearchSandboxesResult) GetItems() []Sandbox {
+func (o *ListSandboxesResponse) GetItems() []Sandbox {
 	if o == nil {
 		var ret []Sandbox
 		return ret
@@ -61,7 +61,7 @@ func (o *SearchSandboxesResult) GetItems() []Sandbox {
 
 // GetItemsOk returns a tuple with the Items field value
 // and a boolean to check if the value has been set.
-func (o *SearchSandboxesResult) GetItemsOk() ([]Sandbox, bool) {
+func (o *ListSandboxesResponse) GetItemsOk() ([]Sandbox, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -69,13 +69,13 @@ func (o *SearchSandboxesResult) GetItemsOk() ([]Sandbox, bool) {
 }
 
 // SetItems sets field value
-func (o *SearchSandboxesResult) SetItems(v []Sandbox) {
+func (o *ListSandboxesResponse) SetItems(v []Sandbox) {
 	o.Items = v
 }
 
 // GetNextCursor returns the NextCursor field value
 // If the value is explicit nil, the zero value for string will be returned
-func (o *SearchSandboxesResult) GetNextCursor() string {
+func (o *ListSandboxesResponse) GetNextCursor() string {
 	if o == nil || o.NextCursor.Get() == nil {
 		var ret string
 		return ret
@@ -87,7 +87,7 @@ func (o *SearchSandboxesResult) GetNextCursor() string {
 // GetNextCursorOk returns a tuple with the NextCursor field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *SearchSandboxesResult) GetNextCursorOk() (*string, bool) {
+func (o *ListSandboxesResponse) GetNextCursorOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -95,11 +95,11 @@ func (o *SearchSandboxesResult) GetNextCursorOk() (*string, bool) {
 }
 
 // SetNextCursor sets field value
-func (o *SearchSandboxesResult) SetNextCursor(v string) {
+func (o *ListSandboxesResponse) SetNextCursor(v string) {
 	o.NextCursor.Set(&v)
 }
 
-func (o SearchSandboxesResult) MarshalJSON() ([]byte, error) {
+func (o ListSandboxesResponse) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -107,7 +107,7 @@ func (o SearchSandboxesResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o SearchSandboxesResult) ToMap() (map[string]interface{}, error) {
+func (o ListSandboxesResponse) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["items"] = o.Items
 	toSerialize["nextCursor"] = o.NextCursor.Get()
@@ -119,7 +119,7 @@ func (o SearchSandboxesResult) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-func (o *SearchSandboxesResult) UnmarshalJSON(data []byte) (err error) {
+func (o *ListSandboxesResponse) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -142,15 +142,15 @@ func (o *SearchSandboxesResult) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varSearchSandboxesResult := _SearchSandboxesResult{}
+	varListSandboxesResponse := _ListSandboxesResponse{}
 
-	err = json.Unmarshal(data, &varSearchSandboxesResult)
+	err = json.Unmarshal(data, &varListSandboxesResponse)
 
 	if err != nil {
 		return err
 	}
 
-	*o = SearchSandboxesResult(varSearchSandboxesResult)
+	*o = ListSandboxesResponse(varListSandboxesResponse)
 
 	additionalProperties := make(map[string]interface{})
 
@@ -163,38 +163,38 @@ func (o *SearchSandboxesResult) UnmarshalJSON(data []byte) (err error) {
 	return err
 }
 
-type NullableSearchSandboxesResult struct {
-	value *SearchSandboxesResult
+type NullableListSandboxesResponse struct {
+	value *ListSandboxesResponse
 	isSet bool
 }
 
-func (v NullableSearchSandboxesResult) Get() *SearchSandboxesResult {
+func (v NullableListSandboxesResponse) Get() *ListSandboxesResponse {
 	return v.value
 }
 
-func (v *NullableSearchSandboxesResult) Set(val *SearchSandboxesResult) {
+func (v *NullableListSandboxesResponse) Set(val *ListSandboxesResponse) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableSearchSandboxesResult) IsSet() bool {
+func (v NullableListSandboxesResponse) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableSearchSandboxesResult) Unset() {
+func (v *NullableListSandboxesResponse) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableSearchSandboxesResult(val *SearchSandboxesResult) *NullableSearchSandboxesResult {
-	return &NullableSearchSandboxesResult{value: val, isSet: true}
+func NewNullableListSandboxesResponse(val *ListSandboxesResponse) *NullableListSandboxesResponse {
+	return &NullableListSandboxesResponse{value: val, isSet: true}
 }
 
-func (v NullableSearchSandboxesResult) MarshalJSON() ([]byte, error) {
+func (v NullableListSandboxesResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableSearchSandboxesResult) UnmarshalJSON(src []byte) error {
+func (v *NullableListSandboxesResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

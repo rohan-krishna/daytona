@@ -105,6 +105,7 @@ src/main/java/io/daytona/api/client/model/KeyboardHotkeyRequest.java
 src/main/java/io/daytona/api/client/model/KeyboardPressRequest.java
 src/main/java/io/daytona/api/client/model/KeyboardTypeRequest.java
 src/main/java/io/daytona/api/client/model/ListBranchResponse.java
+src/main/java/io/daytona/api/client/model/ListSandboxesResponse.java
 src/main/java/io/daytona/api/client/model/LogEntry.java
 src/main/java/io/daytona/api/client/model/LspCompletionParams.java
 src/main/java/io/daytona/api/client/model/LspDocumentRequest.java
@@ -183,7 +184,6 @@ src/main/java/io/daytona/api/client/model/SandboxState.java
 src/main/java/io/daytona/api/client/model/SandboxVolume.java
 src/main/java/io/daytona/api/client/model/ScreenshotResponse.java
 src/main/java/io/daytona/api/client/model/SearchFilesResponse.java
-src/main/java/io/daytona/api/client/model/SearchSandboxesResult.java
 src/main/java/io/daytona/api/client/model/SendWebhookDto.java
 src/main/java/io/daytona/api/client/model/Session.java
 src/main/java/io/daytona/api/client/model/SessionExecuteRequest.java
@@ -305,6 +305,7 @@ src/test/java/io/daytona/api/client/model/KeyboardHotkeyRequestTest.java
 src/test/java/io/daytona/api/client/model/KeyboardPressRequestTest.java
 src/test/java/io/daytona/api/client/model/KeyboardTypeRequestTest.java
 src/test/java/io/daytona/api/client/model/ListBranchResponseTest.java
+src/test/java/io/daytona/api/client/model/ListSandboxesResponseTest.java
 src/test/java/io/daytona/api/client/model/LogEntryTest.java
 src/test/java/io/daytona/api/client/model/LspCompletionParamsTest.java
 src/test/java/io/daytona/api/client/model/LspDocumentRequestTest.java
@@ -383,7 +384,6 @@ src/test/java/io/daytona/api/client/model/SandboxTest.java
 src/test/java/io/daytona/api/client/model/SandboxVolumeTest.java
 src/test/java/io/daytona/api/client/model/ScreenshotResponseTest.java
 src/test/java/io/daytona/api/client/model/SearchFilesResponseTest.java
-src/test/java/io/daytona/api/client/model/SearchSandboxesResultTest.java
 src/test/java/io/daytona/api/client/model/SendWebhookDtoTest.java
 src/test/java/io/daytona/api/client/model/SessionExecuteRequestTest.java
 src/test/java/io/daytona/api/client/model/SessionExecuteResponseTest.java

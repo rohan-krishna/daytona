@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import io.daytona.api.client.model.CreateSandbox;
 import io.daytona.api.client.model.CreateSandboxSnapshot;
 import io.daytona.api.client.model.ForkSandbox;
+import io.daytona.api.client.model.ListSandboxesResponse;
 import io.daytona.api.client.model.MetricsResponse;
 import java.time.OffsetDateTime;
 import io.daytona.api.client.model.Organization;
@@ -42,7 +43,6 @@ import io.daytona.api.client.model.RegionQuota;
 import io.daytona.api.client.model.ResizeSandbox;
 import io.daytona.api.client.model.Sandbox;
 import io.daytona.api.client.model.SandboxLabels;
-import io.daytona.api.client.model.SearchSandboxesResult;
 import io.daytona.api.client.model.SignedPortPreviewUrl;
 import io.daytona.api.client.model.SshAccessDto;
 import io.daytona.api.client.model.SshAccessValidationDto;
@@ -3610,9 +3610,29 @@ public class SandboxApi {
     /**
      * Build call for listSandboxes
      * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
-     * @param verbose Include verbose output (optional)
+     * @param cursor Pagination cursor from a previous response (optional)
+     * @param limit Number of results per page (optional, default to 100)
+     * @param id Filter by ID prefix (case-insensitive) (optional)
+     * @param name Filter by name prefix (case-insensitive) (optional)
      * @param labels JSON encoded labels to filter by (optional)
-     * @param includeErroredDeleted Include errored and deleted sandboxes (optional)
+     * @param includeErroredDeleted Include results with errored state and deleted desired state (optional, default to false)
+     * @param states List of states to filter by. Can not be combined with \&quot;name\&quot; (optional)
+     * @param snapshots List of snapshot names to filter by (optional)
+     * @param regionIds List of regions IDs to filter by (optional)
+     * @param minCpu Minimum CPU (optional)
+     * @param maxCpu Maximum CPU (optional)
+     * @param minMemoryGiB Minimum memory in GiB (optional)
+     * @param maxMemoryGiB Maximum memory in GiB (optional)
+     * @param minDiskGiB Minimum disk space in GiB (optional)
+     * @param maxDiskGiB Maximum disk space in GiB (optional)
+     * @param isPublic Filter by public status (optional)
+     * @param isRecoverable Filter by recoverable status (optional)
+     * @param createdAtAfter Include items created after this timestamp (optional)
+     * @param createdAtBefore Include items created before this timestamp (optional)
+     * @param lastEventAfter Include items with last event after this timestamp (optional)
+     * @param lastEventBefore Include items with last event before this timestamp (optional)
+     * @param sort Field to sort by (optional, default to lastActivityAt)
+     * @param order Direction to sort by (optional, default to desc)
      * @param _callback Callback for upload/download progress
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
@@ -3620,10 +3640,10 @@ public class SandboxApi {
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> List of all sandboxes </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td>  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call listSandboxesCall(String xDaytonaOrganizationID, Boolean verbose, String labels, Boolean includeErroredDeleted, final ApiCallback _callback) throws ApiException {
+    public okhttp3.Call listSandboxesCall(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback _callback) throws ApiException {
         String basePath = null;
         // Operation Servers
         String[] localBasePaths = new String[] {  };
@@ -3648,8 +3668,20 @@ public class SandboxApi {
         Map<String, String> localVarCookieParams = new HashMap<String, String>();
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
-        if (verbose != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("verbose", verbose));
+        if (cursor != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("cursor", cursor));
+        }
+
+        if (limit != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
+        }
+
+        if (id != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("id", id));
+        }
+
+        if (name != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("name", name));
         }
 
         if (labels != null) {
@@ -3658,6 +3690,74 @@ public class SandboxApi {
 
         if (includeErroredDeleted != null) {
             localVarQueryParams.addAll(localVarApiClient.parameterToPair("includeErroredDeleted", includeErroredDeleted));
+        }
+
+        if (states != null) {
+            localVarCollectionQueryParams.addAll(localVarApiClient.parameterToPairs("multi", "states", states));
+        }
+
+        if (snapshots != null) {
+            localVarCollectionQueryParams.addAll(localVarApiClient.parameterToPairs("multi", "snapshots", snapshots));
+        }
+
+        if (regionIds != null) {
+            localVarCollectionQueryParams.addAll(localVarApiClient.parameterToPairs("multi", "regionIds", regionIds));
+        }
+
+        if (minCpu != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("minCpu", minCpu));
+        }
+
+        if (maxCpu != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("maxCpu", maxCpu));
+        }
+
+        if (minMemoryGiB != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("minMemoryGiB", minMemoryGiB));
+        }
+
+        if (maxMemoryGiB != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("maxMemoryGiB", maxMemoryGiB));
+        }
+
+        if (minDiskGiB != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("minDiskGiB", minDiskGiB));
+        }
+
+        if (maxDiskGiB != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("maxDiskGiB", maxDiskGiB));
+        }
+
+        if (isPublic != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("isPublic", isPublic));
+        }
+
+        if (isRecoverable != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("isRecoverable", isRecoverable));
+        }
+
+        if (createdAtAfter != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("createdAtAfter", createdAtAfter));
+        }
+
+        if (createdAtBefore != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("createdAtBefore", createdAtBefore));
+        }
+
+        if (lastEventAfter != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("lastEventAfter", lastEventAfter));
+        }
+
+        if (lastEventBefore != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("lastEventBefore", lastEventBefore));
+        }
+
+        if (sort != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("sort", sort));
+        }
+
+        if (order != null) {
+            localVarQueryParams.addAll(localVarApiClient.parameterToPair("order", order));
         }
 
         final String[] localVarAccepts = {
@@ -3685,61 +3785,121 @@ public class SandboxApi {
     }
 
     @SuppressWarnings("rawtypes")
-    private okhttp3.Call listSandboxesValidateBeforeCall(String xDaytonaOrganizationID, Boolean verbose, String labels, Boolean includeErroredDeleted, final ApiCallback _callback) throws ApiException {
-        return listSandboxesCall(xDaytonaOrganizationID, verbose, labels, includeErroredDeleted, _callback);
+    private okhttp3.Call listSandboxesValidateBeforeCall(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback _callback) throws ApiException {
+        return listSandboxesCall(xDaytonaOrganizationID, cursor, limit, id, name, labels, includeErroredDeleted, states, snapshots, regionIds, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, isPublic, isRecoverable, createdAtAfter, createdAtBefore, lastEventAfter, lastEventBefore, sort, order, _callback);
 
     }
 
     /**
-     * List all sandboxes
-     * 
+     * List sandboxes
+     * Advanced filtering and ordering. Eventually consistent.
      * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
-     * @param verbose Include verbose output (optional)
+     * @param cursor Pagination cursor from a previous response (optional)
+     * @param limit Number of results per page (optional, default to 100)
+     * @param id Filter by ID prefix (case-insensitive) (optional)
+     * @param name Filter by name prefix (case-insensitive) (optional)
      * @param labels JSON encoded labels to filter by (optional)
-     * @param includeErroredDeleted Include errored and deleted sandboxes (optional)
-     * @return List&lt;Sandbox&gt;
+     * @param includeErroredDeleted Include results with errored state and deleted desired state (optional, default to false)
+     * @param states List of states to filter by. Can not be combined with \&quot;name\&quot; (optional)
+     * @param snapshots List of snapshot names to filter by (optional)
+     * @param regionIds List of regions IDs to filter by (optional)
+     * @param minCpu Minimum CPU (optional)
+     * @param maxCpu Maximum CPU (optional)
+     * @param minMemoryGiB Minimum memory in GiB (optional)
+     * @param maxMemoryGiB Maximum memory in GiB (optional)
+     * @param minDiskGiB Minimum disk space in GiB (optional)
+     * @param maxDiskGiB Maximum disk space in GiB (optional)
+     * @param isPublic Filter by public status (optional)
+     * @param isRecoverable Filter by recoverable status (optional)
+     * @param createdAtAfter Include items created after this timestamp (optional)
+     * @param createdAtBefore Include items created before this timestamp (optional)
+     * @param lastEventAfter Include items with last event after this timestamp (optional)
+     * @param lastEventBefore Include items with last event before this timestamp (optional)
+     * @param sort Field to sort by (optional, default to lastActivityAt)
+     * @param order Direction to sort by (optional, default to desc)
+     * @return ListSandboxesResponse
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> List of all sandboxes </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td>  </td><td>  -  </td></tr>
      </table>
      */
-    public List<Sandbox> listSandboxes(String xDaytonaOrganizationID, Boolean verbose, String labels, Boolean includeErroredDeleted) throws ApiException {
-        ApiResponse<List<Sandbox>> localVarResp = listSandboxesWithHttpInfo(xDaytonaOrganizationID, verbose, labels, includeErroredDeleted);
+    public ListSandboxesResponse listSandboxes(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order) throws ApiException {
+        ApiResponse<ListSandboxesResponse> localVarResp = listSandboxesWithHttpInfo(xDaytonaOrganizationID, cursor, limit, id, name, labels, includeErroredDeleted, states, snapshots, regionIds, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, isPublic, isRecoverable, createdAtAfter, createdAtBefore, lastEventAfter, lastEventBefore, sort, order);
         return localVarResp.getData();
     }
 
     /**
-     * List all sandboxes
-     * 
+     * List sandboxes
+     * Advanced filtering and ordering. Eventually consistent.
      * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
-     * @param verbose Include verbose output (optional)
+     * @param cursor Pagination cursor from a previous response (optional)
+     * @param limit Number of results per page (optional, default to 100)
+     * @param id Filter by ID prefix (case-insensitive) (optional)
+     * @param name Filter by name prefix (case-insensitive) (optional)
      * @param labels JSON encoded labels to filter by (optional)
-     * @param includeErroredDeleted Include errored and deleted sandboxes (optional)
-     * @return ApiResponse&lt;List&lt;Sandbox&gt;&gt;
+     * @param includeErroredDeleted Include results with errored state and deleted desired state (optional, default to false)
+     * @param states List of states to filter by. Can not be combined with \&quot;name\&quot; (optional)
+     * @param snapshots List of snapshot names to filter by (optional)
+     * @param regionIds List of regions IDs to filter by (optional)
+     * @param minCpu Minimum CPU (optional)
+     * @param maxCpu Maximum CPU (optional)
+     * @param minMemoryGiB Minimum memory in GiB (optional)
+     * @param maxMemoryGiB Maximum memory in GiB (optional)
+     * @param minDiskGiB Minimum disk space in GiB (optional)
+     * @param maxDiskGiB Maximum disk space in GiB (optional)
+     * @param isPublic Filter by public status (optional)
+     * @param isRecoverable Filter by recoverable status (optional)
+     * @param createdAtAfter Include items created after this timestamp (optional)
+     * @param createdAtBefore Include items created before this timestamp (optional)
+     * @param lastEventAfter Include items with last event after this timestamp (optional)
+     * @param lastEventBefore Include items with last event before this timestamp (optional)
+     * @param sort Field to sort by (optional, default to lastActivityAt)
+     * @param order Direction to sort by (optional, default to desc)
+     * @return ApiResponse&lt;ListSandboxesResponse&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      * @http.response.details
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> List of all sandboxes </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td>  </td><td>  -  </td></tr>
      </table>
      */
-    public ApiResponse<List<Sandbox>> listSandboxesWithHttpInfo(String xDaytonaOrganizationID, Boolean verbose, String labels, Boolean includeErroredDeleted) throws ApiException {
-        okhttp3.Call localVarCall = listSandboxesValidateBeforeCall(xDaytonaOrganizationID, verbose, labels, includeErroredDeleted, null);
-        Type localVarReturnType = new TypeToken<List<Sandbox>>(){}.getType();
+    public ApiResponse<ListSandboxesResponse> listSandboxesWithHttpInfo(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order) throws ApiException {
+        okhttp3.Call localVarCall = listSandboxesValidateBeforeCall(xDaytonaOrganizationID, cursor, limit, id, name, labels, includeErroredDeleted, states, snapshots, regionIds, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, isPublic, isRecoverable, createdAtAfter, createdAtBefore, lastEventAfter, lastEventBefore, sort, order, null);
+        Type localVarReturnType = new TypeToken<ListSandboxesResponse>(){}.getType();
         return localVarApiClient.execute(localVarCall, localVarReturnType);
     }
 
     /**
-     * List all sandboxes (asynchronously)
-     * 
+     * List sandboxes (asynchronously)
+     * Advanced filtering and ordering. Eventually consistent.
      * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
-     * @param verbose Include verbose output (optional)
+     * @param cursor Pagination cursor from a previous response (optional)
+     * @param limit Number of results per page (optional, default to 100)
+     * @param id Filter by ID prefix (case-insensitive) (optional)
+     * @param name Filter by name prefix (case-insensitive) (optional)
      * @param labels JSON encoded labels to filter by (optional)
-     * @param includeErroredDeleted Include errored and deleted sandboxes (optional)
+     * @param includeErroredDeleted Include results with errored state and deleted desired state (optional, default to false)
+     * @param states List of states to filter by. Can not be combined with \&quot;name\&quot; (optional)
+     * @param snapshots List of snapshot names to filter by (optional)
+     * @param regionIds List of regions IDs to filter by (optional)
+     * @param minCpu Minimum CPU (optional)
+     * @param maxCpu Maximum CPU (optional)
+     * @param minMemoryGiB Minimum memory in GiB (optional)
+     * @param maxMemoryGiB Maximum memory in GiB (optional)
+     * @param minDiskGiB Minimum disk space in GiB (optional)
+     * @param maxDiskGiB Maximum disk space in GiB (optional)
+     * @param isPublic Filter by public status (optional)
+     * @param isRecoverable Filter by recoverable status (optional)
+     * @param createdAtAfter Include items created after this timestamp (optional)
+     * @param createdAtBefore Include items created before this timestamp (optional)
+     * @param lastEventAfter Include items with last event after this timestamp (optional)
+     * @param lastEventBefore Include items with last event before this timestamp (optional)
+     * @param sort Field to sort by (optional, default to lastActivityAt)
+     * @param order Direction to sort by (optional, default to desc)
      * @param _callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
@@ -3747,13 +3907,13 @@ public class SandboxApi {
      <table border="1">
        <caption>Response Details</caption>
         <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td> List of all sandboxes </td><td>  -  </td></tr>
+        <tr><td> 200 </td><td>  </td><td>  -  </td></tr>
      </table>
      */
-    public okhttp3.Call listSandboxesAsync(String xDaytonaOrganizationID, Boolean verbose, String labels, Boolean includeErroredDeleted, final ApiCallback<List<Sandbox>> _callback) throws ApiException {
+    public okhttp3.Call listSandboxesAsync(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback<ListSandboxesResponse> _callback) throws ApiException {
 
-        okhttp3.Call localVarCall = listSandboxesValidateBeforeCall(xDaytonaOrganizationID, verbose, labels, includeErroredDeleted, _callback);
-        Type localVarReturnType = new TypeToken<List<Sandbox>>(){}.getType();
+        okhttp3.Call localVarCall = listSandboxesValidateBeforeCall(xDaytonaOrganizationID, cursor, limit, id, name, labels, includeErroredDeleted, states, snapshots, regionIds, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, isPublic, isRecoverable, createdAtAfter, createdAtBefore, lastEventAfter, lastEventBefore, sort, order, _callback);
+        Type localVarReturnType = new TypeToken<ListSandboxesResponse>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }
@@ -4613,316 +4773,6 @@ public class SandboxApi {
 
         okhttp3.Call localVarCall = revokeSshAccessValidateBeforeCall(sandboxIdOrName, xDaytonaOrganizationID, token, _callback);
         Type localVarReturnType = new TypeToken<Sandbox>(){}.getType();
-        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
-        return localVarCall;
-    }
-    /**
-     * Build call for searchSandboxes
-     * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
-     * @param cursor Pagination cursor from a previous response (optional)
-     * @param limit Number of results per page (optional, default to 100)
-     * @param id Filter by ID prefix (case-insensitive) (optional)
-     * @param name Filter by name prefix (case-insensitive) (optional)
-     * @param labels JSON encoded labels to filter by (optional)
-     * @param includeErroredDeleted Include results with errored state and deleted desired state (optional, default to false)
-     * @param states List of states to filter by. Can not be combined with \&quot;name\&quot; (optional)
-     * @param snapshots List of snapshot names to filter by (optional)
-     * @param regionIds List of regions IDs to filter by (optional)
-     * @param minCpu Minimum CPU (optional)
-     * @param maxCpu Maximum CPU (optional)
-     * @param minMemoryGiB Minimum memory in GiB (optional)
-     * @param maxMemoryGiB Maximum memory in GiB (optional)
-     * @param minDiskGiB Minimum disk space in GiB (optional)
-     * @param maxDiskGiB Maximum disk space in GiB (optional)
-     * @param isPublic Filter by public status (optional)
-     * @param isRecoverable Filter by recoverable status (optional)
-     * @param createdAtAfter Include items created after this timestamp (optional)
-     * @param createdAtBefore Include items created before this timestamp (optional)
-     * @param lastEventAfter Include items with last event after this timestamp (optional)
-     * @param lastEventBefore Include items with last event before this timestamp (optional)
-     * @param sort Field to sort by (optional, default to lastActivityAt)
-     * @param order Direction to sort by (optional, default to desc)
-     * @param _callback Callback for upload/download progress
-     * @return Call to execute
-     * @throws ApiException If fail to serialize the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td>  </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call searchSandboxesCall(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback _callback) throws ApiException {
-        String basePath = null;
-        // Operation Servers
-        String[] localBasePaths = new String[] {  };
-
-        // Determine Base Path to Use
-        if (localCustomBaseUrl != null){
-            basePath = localCustomBaseUrl;
-        } else if ( localBasePaths.length > 0 ) {
-            basePath = localBasePaths[localHostIndex];
-        } else {
-            basePath = null;
-        }
-
-        Object localVarPostBody = null;
-
-        // create path and map variables
-        String localVarPath = "/sandbox/search";
-
-        List<Pair> localVarQueryParams = new ArrayList<Pair>();
-        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
-        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
-        Map<String, String> localVarCookieParams = new HashMap<String, String>();
-        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
-
-        if (cursor != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("cursor", cursor));
-        }
-
-        if (limit != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("limit", limit));
-        }
-
-        if (id != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("id", id));
-        }
-
-        if (name != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("name", name));
-        }
-
-        if (labels != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("labels", labels));
-        }
-
-        if (includeErroredDeleted != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("includeErroredDeleted", includeErroredDeleted));
-        }
-
-        if (states != null) {
-            localVarCollectionQueryParams.addAll(localVarApiClient.parameterToPairs("multi", "states", states));
-        }
-
-        if (snapshots != null) {
-            localVarCollectionQueryParams.addAll(localVarApiClient.parameterToPairs("multi", "snapshots", snapshots));
-        }
-
-        if (regionIds != null) {
-            localVarCollectionQueryParams.addAll(localVarApiClient.parameterToPairs("multi", "regionIds", regionIds));
-        }
-
-        if (minCpu != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("minCpu", minCpu));
-        }
-
-        if (maxCpu != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("maxCpu", maxCpu));
-        }
-
-        if (minMemoryGiB != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("minMemoryGiB", minMemoryGiB));
-        }
-
-        if (maxMemoryGiB != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("maxMemoryGiB", maxMemoryGiB));
-        }
-
-        if (minDiskGiB != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("minDiskGiB", minDiskGiB));
-        }
-
-        if (maxDiskGiB != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("maxDiskGiB", maxDiskGiB));
-        }
-
-        if (isPublic != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("isPublic", isPublic));
-        }
-
-        if (isRecoverable != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("isRecoverable", isRecoverable));
-        }
-
-        if (createdAtAfter != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("createdAtAfter", createdAtAfter));
-        }
-
-        if (createdAtBefore != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("createdAtBefore", createdAtBefore));
-        }
-
-        if (lastEventAfter != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("lastEventAfter", lastEventAfter));
-        }
-
-        if (lastEventBefore != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("lastEventBefore", lastEventBefore));
-        }
-
-        if (sort != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("sort", sort));
-        }
-
-        if (order != null) {
-            localVarQueryParams.addAll(localVarApiClient.parameterToPair("order", order));
-        }
-
-        final String[] localVarAccepts = {
-            "application/json"
-        };
-        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
-        if (localVarAccept != null) {
-            localVarHeaderParams.put("Accept", localVarAccept);
-        }
-
-        final String[] localVarContentTypes = {
-        };
-        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
-        if (localVarContentType != null) {
-            localVarHeaderParams.put("Content-Type", localVarContentType);
-        }
-
-        if (xDaytonaOrganizationID != null) {
-            localVarHeaderParams.put("X-Daytona-Organization-ID", localVarApiClient.parameterToString(xDaytonaOrganizationID));
-        }
-
-
-        String[] localVarAuthNames = new String[] { "bearer", "oauth2" };
-        return localVarApiClient.buildCall(basePath, localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private okhttp3.Call searchSandboxesValidateBeforeCall(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback _callback) throws ApiException {
-        return searchSandboxesCall(xDaytonaOrganizationID, cursor, limit, id, name, labels, includeErroredDeleted, states, snapshots, regionIds, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, isPublic, isRecoverable, createdAtAfter, createdAtBefore, lastEventAfter, lastEventBefore, sort, order, _callback);
-
-    }
-
-    /**
-     * Search sandboxes
-     * Advanced filtering and ordering. Eventually consistent.
-     * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
-     * @param cursor Pagination cursor from a previous response (optional)
-     * @param limit Number of results per page (optional, default to 100)
-     * @param id Filter by ID prefix (case-insensitive) (optional)
-     * @param name Filter by name prefix (case-insensitive) (optional)
-     * @param labels JSON encoded labels to filter by (optional)
-     * @param includeErroredDeleted Include results with errored state and deleted desired state (optional, default to false)
-     * @param states List of states to filter by. Can not be combined with \&quot;name\&quot; (optional)
-     * @param snapshots List of snapshot names to filter by (optional)
-     * @param regionIds List of regions IDs to filter by (optional)
-     * @param minCpu Minimum CPU (optional)
-     * @param maxCpu Maximum CPU (optional)
-     * @param minMemoryGiB Minimum memory in GiB (optional)
-     * @param maxMemoryGiB Maximum memory in GiB (optional)
-     * @param minDiskGiB Minimum disk space in GiB (optional)
-     * @param maxDiskGiB Maximum disk space in GiB (optional)
-     * @param isPublic Filter by public status (optional)
-     * @param isRecoverable Filter by recoverable status (optional)
-     * @param createdAtAfter Include items created after this timestamp (optional)
-     * @param createdAtBefore Include items created before this timestamp (optional)
-     * @param lastEventAfter Include items with last event after this timestamp (optional)
-     * @param lastEventBefore Include items with last event before this timestamp (optional)
-     * @param sort Field to sort by (optional, default to lastActivityAt)
-     * @param order Direction to sort by (optional, default to desc)
-     * @return SearchSandboxesResult
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td>  </td><td>  -  </td></tr>
-     </table>
-     */
-    public SearchSandboxesResult searchSandboxes(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order) throws ApiException {
-        ApiResponse<SearchSandboxesResult> localVarResp = searchSandboxesWithHttpInfo(xDaytonaOrganizationID, cursor, limit, id, name, labels, includeErroredDeleted, states, snapshots, regionIds, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, isPublic, isRecoverable, createdAtAfter, createdAtBefore, lastEventAfter, lastEventBefore, sort, order);
-        return localVarResp.getData();
-    }
-
-    /**
-     * Search sandboxes
-     * Advanced filtering and ordering. Eventually consistent.
-     * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
-     * @param cursor Pagination cursor from a previous response (optional)
-     * @param limit Number of results per page (optional, default to 100)
-     * @param id Filter by ID prefix (case-insensitive) (optional)
-     * @param name Filter by name prefix (case-insensitive) (optional)
-     * @param labels JSON encoded labels to filter by (optional)
-     * @param includeErroredDeleted Include results with errored state and deleted desired state (optional, default to false)
-     * @param states List of states to filter by. Can not be combined with \&quot;name\&quot; (optional)
-     * @param snapshots List of snapshot names to filter by (optional)
-     * @param regionIds List of regions IDs to filter by (optional)
-     * @param minCpu Minimum CPU (optional)
-     * @param maxCpu Maximum CPU (optional)
-     * @param minMemoryGiB Minimum memory in GiB (optional)
-     * @param maxMemoryGiB Maximum memory in GiB (optional)
-     * @param minDiskGiB Minimum disk space in GiB (optional)
-     * @param maxDiskGiB Maximum disk space in GiB (optional)
-     * @param isPublic Filter by public status (optional)
-     * @param isRecoverable Filter by recoverable status (optional)
-     * @param createdAtAfter Include items created after this timestamp (optional)
-     * @param createdAtBefore Include items created before this timestamp (optional)
-     * @param lastEventAfter Include items with last event after this timestamp (optional)
-     * @param lastEventBefore Include items with last event before this timestamp (optional)
-     * @param sort Field to sort by (optional, default to lastActivityAt)
-     * @param order Direction to sort by (optional, default to desc)
-     * @return ApiResponse&lt;SearchSandboxesResult&gt;
-     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td>  </td><td>  -  </td></tr>
-     </table>
-     */
-    public ApiResponse<SearchSandboxesResult> searchSandboxesWithHttpInfo(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order) throws ApiException {
-        okhttp3.Call localVarCall = searchSandboxesValidateBeforeCall(xDaytonaOrganizationID, cursor, limit, id, name, labels, includeErroredDeleted, states, snapshots, regionIds, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, isPublic, isRecoverable, createdAtAfter, createdAtBefore, lastEventAfter, lastEventBefore, sort, order, null);
-        Type localVarReturnType = new TypeToken<SearchSandboxesResult>(){}.getType();
-        return localVarApiClient.execute(localVarCall, localVarReturnType);
-    }
-
-    /**
-     * Search sandboxes (asynchronously)
-     * Advanced filtering and ordering. Eventually consistent.
-     * @param xDaytonaOrganizationID Use with JWT to specify the organization ID (optional)
-     * @param cursor Pagination cursor from a previous response (optional)
-     * @param limit Number of results per page (optional, default to 100)
-     * @param id Filter by ID prefix (case-insensitive) (optional)
-     * @param name Filter by name prefix (case-insensitive) (optional)
-     * @param labels JSON encoded labels to filter by (optional)
-     * @param includeErroredDeleted Include results with errored state and deleted desired state (optional, default to false)
-     * @param states List of states to filter by. Can not be combined with \&quot;name\&quot; (optional)
-     * @param snapshots List of snapshot names to filter by (optional)
-     * @param regionIds List of regions IDs to filter by (optional)
-     * @param minCpu Minimum CPU (optional)
-     * @param maxCpu Maximum CPU (optional)
-     * @param minMemoryGiB Minimum memory in GiB (optional)
-     * @param maxMemoryGiB Maximum memory in GiB (optional)
-     * @param minDiskGiB Minimum disk space in GiB (optional)
-     * @param maxDiskGiB Maximum disk space in GiB (optional)
-     * @param isPublic Filter by public status (optional)
-     * @param isRecoverable Filter by recoverable status (optional)
-     * @param createdAtAfter Include items created after this timestamp (optional)
-     * @param createdAtBefore Include items created before this timestamp (optional)
-     * @param lastEventAfter Include items with last event after this timestamp (optional)
-     * @param lastEventBefore Include items with last event before this timestamp (optional)
-     * @param sort Field to sort by (optional, default to lastActivityAt)
-     * @param order Direction to sort by (optional, default to desc)
-     * @param _callback The callback to be executed when the API call finishes
-     * @return The request call
-     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
-     * @http.response.details
-     <table border="1">
-       <caption>Response Details</caption>
-        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
-        <tr><td> 200 </td><td>  </td><td>  -  </td></tr>
-     </table>
-     */
-    public okhttp3.Call searchSandboxesAsync(String xDaytonaOrganizationID, String cursor, BigDecimal limit, String id, String name, String labels, Boolean includeErroredDeleted, List<String> states, List<String> snapshots, List<String> regionIds, BigDecimal minCpu, BigDecimal maxCpu, BigDecimal minMemoryGiB, BigDecimal maxMemoryGiB, BigDecimal minDiskGiB, BigDecimal maxDiskGiB, Boolean isPublic, Boolean isRecoverable, OffsetDateTime createdAtAfter, OffsetDateTime createdAtBefore, OffsetDateTime lastEventAfter, OffsetDateTime lastEventBefore, String sort, String order, final ApiCallback<SearchSandboxesResult> _callback) throws ApiException {
-
-        okhttp3.Call localVarCall = searchSandboxesValidateBeforeCall(xDaytonaOrganizationID, cursor, limit, id, name, labels, includeErroredDeleted, states, snapshots, regionIds, minCpu, maxCpu, minMemoryGiB, maxMemoryGiB, minDiskGiB, maxDiskGiB, isPublic, isRecoverable, createdAtAfter, createdAtBefore, lastEventAfter, lastEventBefore, sort, order, _callback);
-        Type localVarReturnType = new TypeToken<SearchSandboxesResult>(){}.getType();
         localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
         return localVarCall;
     }

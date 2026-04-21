@@ -20,19 +20,19 @@ import type { Sandbox } from './sandbox';
 /**
  * 
  * @export
- * @interface SearchSandboxesResult
+ * @interface ListSandboxesResponse
  */
-export interface SearchSandboxesResult {
+export interface ListSandboxesResponse {
     /**
      * List of results for the current page
      * @type {Array<Sandbox>}
-     * @memberof SearchSandboxesResult
+     * @memberof ListSandboxesResponse
      */
     'items': Array<Sandbox>;
     /**
      * Cursor for the next page of results
      * @type {string}
-     * @memberof SearchSandboxesResult
+     * @memberof ListSandboxesResponse
      */
     'nextCursor': string | null;
 }

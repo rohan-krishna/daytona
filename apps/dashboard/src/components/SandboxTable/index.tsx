@@ -21,8 +21,8 @@ import { AnimatePresence } from 'motion/react'
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCommandPaletteActions } from '../CommandPalette'
-import { SelectionToast } from '../SelectionToast'
 import { CursorPagination } from '../CursorPagination'
+import { SelectionToast } from '../SelectionToast'
 import { TableEmptyState } from '../TableEmptyState'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { BulkAction, BulkActionAlertDialog } from './BulkActionAlertDialog'
@@ -37,7 +37,9 @@ export function SandboxTable({
   sandboxStateIsTransitioning,
   loading,
   snapshots,
-  loadingSnapshots,
+  snapshotsDataIsLoading,
+  snapshotsDataHasMore,
+  onChangeSnapshotSearchValue,
   regionsData,
   regionsDataIsLoading,
   getRegionName,
@@ -55,6 +57,12 @@ export function SandboxTable({
   handleRevokeSshAccess,
   handleScreenRecordings,
   onRowClick,
+  handleRecover,
+  handleCreateSnapshot,
+  handleFork,
+  handleViewForks,
+  handleRefresh,
+  isRefreshing,
   pageSize,
   hasNextPage,
   hasPreviousPage,
@@ -65,17 +73,13 @@ export function SandboxTable({
   onSortingChange,
   filters,
   onFiltersChange,
-  handleRecover,
-  handleCreateSnapshot,
-  handleFork,
-  handleViewForks,
 }: SandboxTableProps) {
   const navigate = useNavigate()
   const { authenticatedUserHasPermission } = useSelectedOrganization()
   const writePermitted = authenticatedUserHasPermission(OrganizationRolePermissionsEnum.WRITE_SANDBOXES)
   const deletePermitted = authenticatedUserHasPermission(OrganizationRolePermissionsEnum.DELETE_SANDBOXES)
 
-  const { table, labelOptions, regionOptions } = useSandboxTable({
+  const { table, regionOptions } = useSandboxTable({
     data,
     sandboxIsLoading,
     writePermitted,
@@ -90,17 +94,16 @@ export function SandboxTable({
     handleCreateSshAccess,
     handleRevokeSshAccess,
     handleScreenRecordings,
-    pageSize,
-    sorting,
-    onSortingChange,
-    filters,
-    onFiltersChange,
-    regionsData,
     handleRecover,
     getRegionName,
     handleCreateSnapshot,
     handleFork,
     handleViewForks,
+    pageSize,
+    sorting,
+    onSortingChange,
+    filters,
+    onFiltersChange,
   })
 
   const [pendingBulkAction, setPendingBulkAction] = useState<BulkAction | null>(null)
@@ -173,11 +176,14 @@ export function SandboxTable({
     <>
       <SandboxTableHeader
         table={table}
-        labelOptions={labelOptions}
         regionOptions={regionOptions}
         regionsDataIsLoading={regionsDataIsLoading}
         snapshots={snapshots}
-        loadingSnapshots={loadingSnapshots}
+        snapshotsDataIsLoading={snapshotsDataIsLoading}
+        snapshotsDataHasMore={snapshotsDataHasMore}
+        onChangeSnapshotSearchValue={onChangeSnapshotSearchValue}
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
       />
 
       <Table className="border-separate border-spacing-0" style={{ tableLayout: 'fixed', width: '100%' }}>

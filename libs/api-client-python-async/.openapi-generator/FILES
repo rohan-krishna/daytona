@@ -89,6 +89,7 @@ daytona_api_client_async/models/keyboard_hotkey_request.py
 daytona_api_client_async/models/keyboard_press_request.py
 daytona_api_client_async/models/keyboard_type_request.py
 daytona_api_client_async/models/list_branch_response.py
+daytona_api_client_async/models/list_sandboxes_response.py
 daytona_api_client_async/models/log_entry.py
 daytona_api_client_async/models/lsp_completion_params.py
 daytona_api_client_async/models/lsp_document_request.py
@@ -167,7 +168,6 @@ daytona_api_client_async/models/sandbox_state.py
 daytona_api_client_async/models/sandbox_volume.py
 daytona_api_client_async/models/screenshot_response.py
 daytona_api_client_async/models/search_files_response.py
-daytona_api_client_async/models/search_sandboxes_result.py
 daytona_api_client_async/models/send_webhook_dto.py
 daytona_api_client_async/models/session.py
 daytona_api_client_async/models/session_execute_request.py

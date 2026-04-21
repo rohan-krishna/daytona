@@ -1696,37 +1696,143 @@ module DaytonaApiClient
       return data, status_code, headers
     end
 
-    # List all sandboxes
+    # List sandboxes
+    # Advanced filtering and ordering. Eventually consistent.
     # @param [Hash] opts the optional parameters
     # @option opts [String] :x_daytona_organization_id Use with JWT to specify the organization ID
-    # @option opts [Boolean] :verbose Include verbose output
+    # @option opts [String] :cursor Pagination cursor from a previous response
+    # @option opts [Float] :limit Number of results per page (default to 100)
+    # @option opts [String] :id Filter by ID prefix (case-insensitive)
+    # @option opts [String] :name Filter by name prefix (case-insensitive)
     # @option opts [String] :labels JSON encoded labels to filter by
-    # @option opts [Boolean] :include_errored_deleted Include errored and deleted sandboxes
-    # @return [Array<Sandbox>]
+    # @option opts [Boolean] :include_errored_deleted Include results with errored state and deleted desired state (default to false)
+    # @option opts [Array<String>] :states List of states to filter by. Can not be combined with \&quot;name\&quot;
+    # @option opts [Array<String>] :snapshots List of snapshot names to filter by
+    # @option opts [Array<String>] :region_ids List of regions IDs to filter by
+    # @option opts [Float] :min_cpu Minimum CPU
+    # @option opts [Float] :max_cpu Maximum CPU
+    # @option opts [Float] :min_memory_gi_b Minimum memory in GiB
+    # @option opts [Float] :max_memory_gi_b Maximum memory in GiB
+    # @option opts [Float] :min_disk_gi_b Minimum disk space in GiB
+    # @option opts [Float] :max_disk_gi_b Maximum disk space in GiB
+    # @option opts [Boolean] :is_public Filter by public status
+    # @option opts [Boolean] :is_recoverable Filter by recoverable status
+    # @option opts [Time] :created_at_after Include items created after this timestamp
+    # @option opts [Time] :created_at_before Include items created before this timestamp
+    # @option opts [Time] :last_event_after Include items with last event after this timestamp
+    # @option opts [Time] :last_event_before Include items with last event before this timestamp
+    # @option opts [String] :sort Field to sort by (default to 'lastActivityAt')
+    # @option opts [String] :order Direction to sort by (default to 'desc')
+    # @return [ListSandboxesResponse]
     def list_sandboxes(opts = {})
       data, _status_code, _headers = list_sandboxes_with_http_info(opts)
       data
     end
 
-    # List all sandboxes
+    # List sandboxes
+    # Advanced filtering and ordering. Eventually consistent.
     # @param [Hash] opts the optional parameters
     # @option opts [String] :x_daytona_organization_id Use with JWT to specify the organization ID
-    # @option opts [Boolean] :verbose Include verbose output
+    # @option opts [String] :cursor Pagination cursor from a previous response
+    # @option opts [Float] :limit Number of results per page (default to 100)
+    # @option opts [String] :id Filter by ID prefix (case-insensitive)
+    # @option opts [String] :name Filter by name prefix (case-insensitive)
     # @option opts [String] :labels JSON encoded labels to filter by
-    # @option opts [Boolean] :include_errored_deleted Include errored and deleted sandboxes
-    # @return [Array<(Array<Sandbox>, Integer, Hash)>] Array<Sandbox> data, response status code and response headers
+    # @option opts [Boolean] :include_errored_deleted Include results with errored state and deleted desired state (default to false)
+    # @option opts [Array<String>] :states List of states to filter by. Can not be combined with \&quot;name\&quot;
+    # @option opts [Array<String>] :snapshots List of snapshot names to filter by
+    # @option opts [Array<String>] :region_ids List of regions IDs to filter by
+    # @option opts [Float] :min_cpu Minimum CPU
+    # @option opts [Float] :max_cpu Maximum CPU
+    # @option opts [Float] :min_memory_gi_b Minimum memory in GiB
+    # @option opts [Float] :max_memory_gi_b Maximum memory in GiB
+    # @option opts [Float] :min_disk_gi_b Minimum disk space in GiB
+    # @option opts [Float] :max_disk_gi_b Maximum disk space in GiB
+    # @option opts [Boolean] :is_public Filter by public status
+    # @option opts [Boolean] :is_recoverable Filter by recoverable status
+    # @option opts [Time] :created_at_after Include items created after this timestamp
+    # @option opts [Time] :created_at_before Include items created before this timestamp
+    # @option opts [Time] :last_event_after Include items with last event after this timestamp
+    # @option opts [Time] :last_event_before Include items with last event before this timestamp
+    # @option opts [String] :sort Field to sort by (default to 'lastActivityAt')
+    # @option opts [String] :order Direction to sort by (default to 'desc')
+    # @return [Array<(ListSandboxesResponse, Integer, Hash)>] ListSandboxesResponse data, response status code and response headers
     def list_sandboxes_with_http_info(opts = {})
       if @api_client.config.debugging
         @api_client.config.logger.debug 'Calling API: SandboxApi.list_sandboxes ...'
+      end
+      if @api_client.config.client_side_validation && !opts[:'limit'].nil? && opts[:'limit'] > 200
+        fail ArgumentError, 'invalid value for "opts[:"limit"]" when calling SandboxApi.list_sandboxes, must be smaller than or equal to 200.'
+      end
+
+      if @api_client.config.client_side_validation && !opts[:'limit'].nil? && opts[:'limit'] < 1
+        fail ArgumentError, 'invalid value for "opts[:"limit"]" when calling SandboxApi.list_sandboxes, must be greater than or equal to 1.'
+      end
+
+      allowable_values = ["creating", "restoring", "destroying", "started", "stopped", "starting", "stopping", "error", "build_failed", "pending_build", "building_snapshot", "unknown", "pulling_snapshot", "archived", "archiving", "resizing", "snapshotting", "forking"]
+      if @api_client.config.client_side_validation && opts[:'states'] && !opts[:'states'].all? { |item| allowable_values.include?(item) }
+        fail ArgumentError, "invalid value for \"states\", must include one of #{allowable_values}"
+      end
+      if @api_client.config.client_side_validation && !opts[:'min_cpu'].nil? && opts[:'min_cpu'] < 1
+        fail ArgumentError, 'invalid value for "opts[:"min_cpu"]" when calling SandboxApi.list_sandboxes, must be greater than or equal to 1.'
+      end
+
+      if @api_client.config.client_side_validation && !opts[:'max_cpu'].nil? && opts[:'max_cpu'] < 1
+        fail ArgumentError, 'invalid value for "opts[:"max_cpu"]" when calling SandboxApi.list_sandboxes, must be greater than or equal to 1.'
+      end
+
+      if @api_client.config.client_side_validation && !opts[:'min_memory_gi_b'].nil? && opts[:'min_memory_gi_b'] < 1
+        fail ArgumentError, 'invalid value for "opts[:"min_memory_gi_b"]" when calling SandboxApi.list_sandboxes, must be greater than or equal to 1.'
+      end
+
+      if @api_client.config.client_side_validation && !opts[:'max_memory_gi_b'].nil? && opts[:'max_memory_gi_b'] < 1
+        fail ArgumentError, 'invalid value for "opts[:"max_memory_gi_b"]" when calling SandboxApi.list_sandboxes, must be greater than or equal to 1.'
+      end
+
+      if @api_client.config.client_side_validation && !opts[:'min_disk_gi_b'].nil? && opts[:'min_disk_gi_b'] < 1
+        fail ArgumentError, 'invalid value for "opts[:"min_disk_gi_b"]" when calling SandboxApi.list_sandboxes, must be greater than or equal to 1.'
+      end
+
+      if @api_client.config.client_side_validation && !opts[:'max_disk_gi_b'].nil? && opts[:'max_disk_gi_b'] < 1
+        fail ArgumentError, 'invalid value for "opts[:"max_disk_gi_b"]" when calling SandboxApi.list_sandboxes, must be greater than or equal to 1.'
+      end
+
+      allowable_values = ["name", "cpu", "memoryGiB", "diskGiB", "lastActivityAt", "createdAt"]
+      if @api_client.config.client_side_validation && opts[:'sort'] && !allowable_values.include?(opts[:'sort'])
+        fail ArgumentError, "invalid value for \"sort\", must be one of #{allowable_values}"
+      end
+      allowable_values = ["asc", "desc"]
+      if @api_client.config.client_side_validation && opts[:'order'] && !allowable_values.include?(opts[:'order'])
+        fail ArgumentError, "invalid value for \"order\", must be one of #{allowable_values}"
       end
       # resource path
       local_var_path = '/sandbox'
 
       # query parameters
       query_params = opts[:query_params] || {}
-      query_params[:'verbose'] = opts[:'verbose'] if !opts[:'verbose'].nil?
+      query_params[:'cursor'] = opts[:'cursor'] if !opts[:'cursor'].nil?
+      query_params[:'limit'] = opts[:'limit'] if !opts[:'limit'].nil?
+      query_params[:'id'] = opts[:'id'] if !opts[:'id'].nil?
+      query_params[:'name'] = opts[:'name'] if !opts[:'name'].nil?
       query_params[:'labels'] = opts[:'labels'] if !opts[:'labels'].nil?
       query_params[:'includeErroredDeleted'] = opts[:'include_errored_deleted'] if !opts[:'include_errored_deleted'].nil?
+      query_params[:'states'] = @api_client.build_collection_param(opts[:'states'], :multi) if !opts[:'states'].nil?
+      query_params[:'snapshots'] = @api_client.build_collection_param(opts[:'snapshots'], :multi) if !opts[:'snapshots'].nil?
+      query_params[:'regionIds'] = @api_client.build_collection_param(opts[:'region_ids'], :multi) if !opts[:'region_ids'].nil?
+      query_params[:'minCpu'] = opts[:'min_cpu'] if !opts[:'min_cpu'].nil?
+      query_params[:'maxCpu'] = opts[:'max_cpu'] if !opts[:'max_cpu'].nil?
+      query_params[:'minMemoryGiB'] = opts[:'min_memory_gi_b'] if !opts[:'min_memory_gi_b'].nil?
+      query_params[:'maxMemoryGiB'] = opts[:'max_memory_gi_b'] if !opts[:'max_memory_gi_b'].nil?
+      query_params[:'minDiskGiB'] = opts[:'min_disk_gi_b'] if !opts[:'min_disk_gi_b'].nil?
+      query_params[:'maxDiskGiB'] = opts[:'max_disk_gi_b'] if !opts[:'max_disk_gi_b'].nil?
+      query_params[:'isPublic'] = opts[:'is_public'] if !opts[:'is_public'].nil?
+      query_params[:'isRecoverable'] = opts[:'is_recoverable'] if !opts[:'is_recoverable'].nil?
+      query_params[:'createdAtAfter'] = opts[:'created_at_after'] if !opts[:'created_at_after'].nil?
+      query_params[:'createdAtBefore'] = opts[:'created_at_before'] if !opts[:'created_at_before'].nil?
+      query_params[:'lastEventAfter'] = opts[:'last_event_after'] if !opts[:'last_event_after'].nil?
+      query_params[:'lastEventBefore'] = opts[:'last_event_before'] if !opts[:'last_event_before'].nil?
+      query_params[:'sort'] = opts[:'sort'] if !opts[:'sort'].nil?
+      query_params[:'order'] = opts[:'order'] if !opts[:'order'].nil?
 
       # header parameters
       header_params = opts[:header_params] || {}
@@ -1741,7 +1847,7 @@ module DaytonaApiClient
       post_body = opts[:debug_body]
 
       # return_type
-      return_type = opts[:debug_return_type] || 'Array<Sandbox>'
+      return_type = opts[:debug_return_type] || 'ListSandboxesResponse'
 
       # auth_names
       auth_names = opts[:debug_auth_names] || ['bearer', 'oauth2']
@@ -2203,179 +2309,6 @@ module DaytonaApiClient
       data, status_code, headers = @api_client.call_api(:DELETE, local_var_path, new_options)
       if @api_client.config.debugging
         @api_client.config.logger.debug "API called: SandboxApi#revoke_ssh_access\nData: #{data.inspect}\nStatus code: #{status_code}\nHeaders: #{headers}"
-      end
-      return data, status_code, headers
-    end
-
-    # Search sandboxes
-    # Advanced filtering and ordering. Eventually consistent.
-    # @param [Hash] opts the optional parameters
-    # @option opts [String] :x_daytona_organization_id Use with JWT to specify the organization ID
-    # @option opts [String] :cursor Pagination cursor from a previous response
-    # @option opts [Float] :limit Number of results per page (default to 100)
-    # @option opts [String] :id Filter by ID prefix (case-insensitive)
-    # @option opts [String] :name Filter by name prefix (case-insensitive)
-    # @option opts [String] :labels JSON encoded labels to filter by
-    # @option opts [Boolean] :include_errored_deleted Include results with errored state and deleted desired state (default to false)
-    # @option opts [Array<String>] :states List of states to filter by. Can not be combined with \&quot;name\&quot;
-    # @option opts [Array<String>] :snapshots List of snapshot names to filter by
-    # @option opts [Array<String>] :region_ids List of regions IDs to filter by
-    # @option opts [Float] :min_cpu Minimum CPU
-    # @option opts [Float] :max_cpu Maximum CPU
-    # @option opts [Float] :min_memory_gi_b Minimum memory in GiB
-    # @option opts [Float] :max_memory_gi_b Maximum memory in GiB
-    # @option opts [Float] :min_disk_gi_b Minimum disk space in GiB
-    # @option opts [Float] :max_disk_gi_b Maximum disk space in GiB
-    # @option opts [Boolean] :is_public Filter by public status
-    # @option opts [Boolean] :is_recoverable Filter by recoverable status
-    # @option opts [Time] :created_at_after Include items created after this timestamp
-    # @option opts [Time] :created_at_before Include items created before this timestamp
-    # @option opts [Time] :last_event_after Include items with last event after this timestamp
-    # @option opts [Time] :last_event_before Include items with last event before this timestamp
-    # @option opts [String] :sort Field to sort by (default to 'lastActivityAt')
-    # @option opts [String] :order Direction to sort by (default to 'desc')
-    # @return [SearchSandboxesResult]
-    def search_sandboxes(opts = {})
-      data, _status_code, _headers = search_sandboxes_with_http_info(opts)
-      data
-    end
-
-    # Search sandboxes
-    # Advanced filtering and ordering. Eventually consistent.
-    # @param [Hash] opts the optional parameters
-    # @option opts [String] :x_daytona_organization_id Use with JWT to specify the organization ID
-    # @option opts [String] :cursor Pagination cursor from a previous response
-    # @option opts [Float] :limit Number of results per page (default to 100)
-    # @option opts [String] :id Filter by ID prefix (case-insensitive)
-    # @option opts [String] :name Filter by name prefix (case-insensitive)
-    # @option opts [String] :labels JSON encoded labels to filter by
-    # @option opts [Boolean] :include_errored_deleted Include results with errored state and deleted desired state (default to false)
-    # @option opts [Array<String>] :states List of states to filter by. Can not be combined with \&quot;name\&quot;
-    # @option opts [Array<String>] :snapshots List of snapshot names to filter by
-    # @option opts [Array<String>] :region_ids List of regions IDs to filter by
-    # @option opts [Float] :min_cpu Minimum CPU
-    # @option opts [Float] :max_cpu Maximum CPU
-    # @option opts [Float] :min_memory_gi_b Minimum memory in GiB
-    # @option opts [Float] :max_memory_gi_b Maximum memory in GiB
-    # @option opts [Float] :min_disk_gi_b Minimum disk space in GiB
-    # @option opts [Float] :max_disk_gi_b Maximum disk space in GiB
-    # @option opts [Boolean] :is_public Filter by public status
-    # @option opts [Boolean] :is_recoverable Filter by recoverable status
-    # @option opts [Time] :created_at_after Include items created after this timestamp
-    # @option opts [Time] :created_at_before Include items created before this timestamp
-    # @option opts [Time] :last_event_after Include items with last event after this timestamp
-    # @option opts [Time] :last_event_before Include items with last event before this timestamp
-    # @option opts [String] :sort Field to sort by (default to 'lastActivityAt')
-    # @option opts [String] :order Direction to sort by (default to 'desc')
-    # @return [Array<(SearchSandboxesResult, Integer, Hash)>] SearchSandboxesResult data, response status code and response headers
-    def search_sandboxes_with_http_info(opts = {})
-      if @api_client.config.debugging
-        @api_client.config.logger.debug 'Calling API: SandboxApi.search_sandboxes ...'
-      end
-      if @api_client.config.client_side_validation && !opts[:'limit'].nil? && opts[:'limit'] > 200
-        fail ArgumentError, 'invalid value for "opts[:"limit"]" when calling SandboxApi.search_sandboxes, must be smaller than or equal to 200.'
-      end
-
-      if @api_client.config.client_side_validation && !opts[:'limit'].nil? && opts[:'limit'] < 1
-        fail ArgumentError, 'invalid value for "opts[:"limit"]" when calling SandboxApi.search_sandboxes, must be greater than or equal to 1.'
-      end
-
-      allowable_values = ["creating", "restoring", "destroying", "started", "stopped", "starting", "stopping", "error", "build_failed", "pending_build", "building_snapshot", "unknown", "pulling_snapshot", "archived", "archiving", "resizing", "snapshotting", "forking"]
-      if @api_client.config.client_side_validation && opts[:'states'] && !opts[:'states'].all? { |item| allowable_values.include?(item) }
-        fail ArgumentError, "invalid value for \"states\", must include one of #{allowable_values}"
-      end
-      if @api_client.config.client_side_validation && !opts[:'min_cpu'].nil? && opts[:'min_cpu'] < 1
-        fail ArgumentError, 'invalid value for "opts[:"min_cpu"]" when calling SandboxApi.search_sandboxes, must be greater than or equal to 1.'
-      end
-
-      if @api_client.config.client_side_validation && !opts[:'max_cpu'].nil? && opts[:'max_cpu'] < 1
-        fail ArgumentError, 'invalid value for "opts[:"max_cpu"]" when calling SandboxApi.search_sandboxes, must be greater than or equal to 1.'
-      end
-
-      if @api_client.config.client_side_validation && !opts[:'min_memory_gi_b'].nil? && opts[:'min_memory_gi_b'] < 1
-        fail ArgumentError, 'invalid value for "opts[:"min_memory_gi_b"]" when calling SandboxApi.search_sandboxes, must be greater than or equal to 1.'
-      end
-
-      if @api_client.config.client_side_validation && !opts[:'max_memory_gi_b'].nil? && opts[:'max_memory_gi_b'] < 1
-        fail ArgumentError, 'invalid value for "opts[:"max_memory_gi_b"]" when calling SandboxApi.search_sandboxes, must be greater than or equal to 1.'
-      end
-
-      if @api_client.config.client_side_validation && !opts[:'min_disk_gi_b'].nil? && opts[:'min_disk_gi_b'] < 1
-        fail ArgumentError, 'invalid value for "opts[:"min_disk_gi_b"]" when calling SandboxApi.search_sandboxes, must be greater than or equal to 1.'
-      end
-
-      if @api_client.config.client_side_validation && !opts[:'max_disk_gi_b'].nil? && opts[:'max_disk_gi_b'] < 1
-        fail ArgumentError, 'invalid value for "opts[:"max_disk_gi_b"]" when calling SandboxApi.search_sandboxes, must be greater than or equal to 1.'
-      end
-
-      allowable_values = ["name", "cpu", "memoryGiB", "diskGiB", "lastActivityAt", "createdAt"]
-      if @api_client.config.client_side_validation && opts[:'sort'] && !allowable_values.include?(opts[:'sort'])
-        fail ArgumentError, "invalid value for \"sort\", must be one of #{allowable_values}"
-      end
-      allowable_values = ["asc", "desc"]
-      if @api_client.config.client_side_validation && opts[:'order'] && !allowable_values.include?(opts[:'order'])
-        fail ArgumentError, "invalid value for \"order\", must be one of #{allowable_values}"
-      end
-      # resource path
-      local_var_path = '/sandbox/search'
-
-      # query parameters
-      query_params = opts[:query_params] || {}
-      query_params[:'cursor'] = opts[:'cursor'] if !opts[:'cursor'].nil?
-      query_params[:'limit'] = opts[:'limit'] if !opts[:'limit'].nil?
-      query_params[:'id'] = opts[:'id'] if !opts[:'id'].nil?
-      query_params[:'name'] = opts[:'name'] if !opts[:'name'].nil?
-      query_params[:'labels'] = opts[:'labels'] if !opts[:'labels'].nil?
-      query_params[:'includeErroredDeleted'] = opts[:'include_errored_deleted'] if !opts[:'include_errored_deleted'].nil?
-      query_params[:'states'] = @api_client.build_collection_param(opts[:'states'], :multi) if !opts[:'states'].nil?
-      query_params[:'snapshots'] = @api_client.build_collection_param(opts[:'snapshots'], :multi) if !opts[:'snapshots'].nil?
-      query_params[:'regionIds'] = @api_client.build_collection_param(opts[:'region_ids'], :multi) if !opts[:'region_ids'].nil?
-      query_params[:'minCpu'] = opts[:'min_cpu'] if !opts[:'min_cpu'].nil?
-      query_params[:'maxCpu'] = opts[:'max_cpu'] if !opts[:'max_cpu'].nil?
-      query_params[:'minMemoryGiB'] = opts[:'min_memory_gi_b'] if !opts[:'min_memory_gi_b'].nil?
-      query_params[:'maxMemoryGiB'] = opts[:'max_memory_gi_b'] if !opts[:'max_memory_gi_b'].nil?
-      query_params[:'minDiskGiB'] = opts[:'min_disk_gi_b'] if !opts[:'min_disk_gi_b'].nil?
-      query_params[:'maxDiskGiB'] = opts[:'max_disk_gi_b'] if !opts[:'max_disk_gi_b'].nil?
-      query_params[:'isPublic'] = opts[:'is_public'] if !opts[:'is_public'].nil?
-      query_params[:'isRecoverable'] = opts[:'is_recoverable'] if !opts[:'is_recoverable'].nil?
-      query_params[:'createdAtAfter'] = opts[:'created_at_after'] if !opts[:'created_at_after'].nil?
-      query_params[:'createdAtBefore'] = opts[:'created_at_before'] if !opts[:'created_at_before'].nil?
-      query_params[:'lastEventAfter'] = opts[:'last_event_after'] if !opts[:'last_event_after'].nil?
-      query_params[:'lastEventBefore'] = opts[:'last_event_before'] if !opts[:'last_event_before'].nil?
-      query_params[:'sort'] = opts[:'sort'] if !opts[:'sort'].nil?
-      query_params[:'order'] = opts[:'order'] if !opts[:'order'].nil?
-
-      # header parameters
-      header_params = opts[:header_params] || {}
-      # HTTP header 'Accept' (if needed)
-      header_params['Accept'] = @api_client.select_header_accept(['application/json']) unless header_params['Accept']
-      header_params[:'X-Daytona-Organization-ID'] = opts[:'x_daytona_organization_id'] if !opts[:'x_daytona_organization_id'].nil?
-
-      # form parameters
-      form_params = opts[:form_params] || {}
-
-      # http body (model)
-      post_body = opts[:debug_body]
-
-      # return_type
-      return_type = opts[:debug_return_type] || 'SearchSandboxesResult'
-
-      # auth_names
-      auth_names = opts[:debug_auth_names] || ['bearer', 'oauth2']
-
-      new_options = opts.merge(
-        :operation => :"SandboxApi.search_sandboxes",
-        :header_params => header_params,
-        :query_params => query_params,
-        :form_params => form_params,
-        :body => post_body,
-        :auth_names => auth_names,
-        :return_type => return_type
-      )
-
-      data, status_code, headers = @api_client.call_api(:GET, local_var_path, new_options)
-      if @api_client.config.debugging
-        @api_client.config.logger.debug "API called: SandboxApi#search_sandboxes\nData: #{data.inspect}\nStatus code: #{status_code}\nHeaders: #{headers}"
       end
       return data, status_code, headers
     end

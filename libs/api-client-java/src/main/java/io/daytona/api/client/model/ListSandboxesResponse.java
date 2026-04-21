@@ -49,10 +49,10 @@ import java.util.Set;
 import io.daytona.api.client.JSON;
 
 /**
- * SearchSandboxesResult
+ * ListSandboxesResponse
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
-public class SearchSandboxesResult {
+public class ListSandboxesResponse {
   public static final String SERIALIZED_NAME_ITEMS = "items";
   @SerializedName(SERIALIZED_NAME_ITEMS)
   @javax.annotation.Nonnull
@@ -63,15 +63,15 @@ public class SearchSandboxesResult {
   @javax.annotation.Nullable
   private String nextCursor;
 
-  public SearchSandboxesResult() {
+  public ListSandboxesResponse() {
   }
 
-  public SearchSandboxesResult items(@javax.annotation.Nonnull List<Sandbox> items) {
+  public ListSandboxesResponse items(@javax.annotation.Nonnull List<Sandbox> items) {
     this.items = items;
     return this;
   }
 
-  public SearchSandboxesResult addItemsItem(Sandbox itemsItem) {
+  public ListSandboxesResponse addItemsItem(Sandbox itemsItem) {
     if (this.items == null) {
       this.items = new ArrayList<>();
     }
@@ -93,7 +93,7 @@ public class SearchSandboxesResult {
   }
 
 
-  public SearchSandboxesResult nextCursor(@javax.annotation.Nullable String nextCursor) {
+  public ListSandboxesResponse nextCursor(@javax.annotation.Nullable String nextCursor) {
     this.nextCursor = nextCursor;
     return this;
   }
@@ -124,9 +124,9 @@ public class SearchSandboxesResult {
    *
    * @param key name of the property
    * @param value value of the property
-   * @return the SearchSandboxesResult instance itself
+   * @return the ListSandboxesResponse instance itself
    */
-  public SearchSandboxesResult putAdditionalProperty(String key, Object value) {
+  public ListSandboxesResponse putAdditionalProperty(String key, Object value) {
     if (this.additionalProperties == null) {
         this.additionalProperties = new HashMap<String, Object>();
     }
@@ -165,10 +165,10 @@ public class SearchSandboxesResult {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SearchSandboxesResult searchSandboxesResult = (SearchSandboxesResult) o;
-    return Objects.equals(this.items, searchSandboxesResult.items) &&
-        Objects.equals(this.nextCursor, searchSandboxesResult.nextCursor)&&
-        Objects.equals(this.additionalProperties, searchSandboxesResult.additionalProperties);
+    ListSandboxesResponse listSandboxesResponse = (ListSandboxesResponse) o;
+    return Objects.equals(this.items, listSandboxesResponse.items) &&
+        Objects.equals(this.nextCursor, listSandboxesResponse.nextCursor)&&
+        Objects.equals(this.additionalProperties, listSandboxesResponse.additionalProperties);
   }
 
   @Override
@@ -179,7 +179,7 @@ public class SearchSandboxesResult {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class SearchSandboxesResult {\n");
+    sb.append("class ListSandboxesResponse {\n");
     sb.append("    items: ").append(toIndentedString(items)).append("\n");
     sb.append("    nextCursor: ").append(toIndentedString(nextCursor)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
@@ -218,17 +218,17 @@ public class SearchSandboxesResult {
    * Validates the JSON Element and throws an exception if issues found
    *
    * @param jsonElement JSON Element
-   * @throws IOException if the JSON Element is invalid with respect to SearchSandboxesResult
+   * @throws IOException if the JSON Element is invalid with respect to ListSandboxesResponse
    */
   public static void validateJsonElement(JsonElement jsonElement) throws IOException {
       if (jsonElement == null) {
-        if (!SearchSandboxesResult.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
-          throw new IllegalArgumentException(String.format("The required field(s) %s in SearchSandboxesResult is not found in the empty JSON string", SearchSandboxesResult.openapiRequiredFields.toString()));
+        if (!ListSandboxesResponse.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
+          throw new IllegalArgumentException(String.format("The required field(s) %s in ListSandboxesResponse is not found in the empty JSON string", ListSandboxesResponse.openapiRequiredFields.toString()));
         }
       }
 
       // check to make sure all required properties/fields are present in the JSON string
-      for (String requiredField : SearchSandboxesResult.openapiRequiredFields) {
+      for (String requiredField : ListSandboxesResponse.openapiRequiredFields) {
         if (jsonElement.getAsJsonObject().get(requiredField) == null) {
           throw new IllegalArgumentException(String.format("The required field `%s` is not found in the JSON string: %s", requiredField, jsonElement.toString()));
         }
@@ -253,16 +253,16 @@ public class SearchSandboxesResult {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-       if (!SearchSandboxesResult.class.isAssignableFrom(type.getRawType())) {
-         return null; // this class only serializes 'SearchSandboxesResult' and its subtypes
+       if (!ListSandboxesResponse.class.isAssignableFrom(type.getRawType())) {
+         return null; // this class only serializes 'ListSandboxesResponse' and its subtypes
        }
        final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
-       final TypeAdapter<SearchSandboxesResult> thisAdapter
-                        = gson.getDelegateAdapter(this, TypeToken.get(SearchSandboxesResult.class));
+       final TypeAdapter<ListSandboxesResponse> thisAdapter
+                        = gson.getDelegateAdapter(this, TypeToken.get(ListSandboxesResponse.class));
 
-       return (TypeAdapter<T>) new TypeAdapter<SearchSandboxesResult>() {
+       return (TypeAdapter<T>) new TypeAdapter<ListSandboxesResponse>() {
            @Override
-           public void write(JsonWriter out, SearchSandboxesResult value) throws IOException {
+           public void write(JsonWriter out, ListSandboxesResponse value) throws IOException {
              JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
              obj.remove("additionalProperties");
              // serialize additional properties
@@ -290,12 +290,12 @@ public class SearchSandboxesResult {
            }
 
            @Override
-           public SearchSandboxesResult read(JsonReader in) throws IOException {
+           public ListSandboxesResponse read(JsonReader in) throws IOException {
              JsonElement jsonElement = elementAdapter.read(in);
              validateJsonElement(jsonElement);
              JsonObject jsonObj = jsonElement.getAsJsonObject();
              // store additional fields in the deserialized instance
-             SearchSandboxesResult instance = thisAdapter.fromJsonTree(jsonObj);
+             ListSandboxesResponse instance = thisAdapter.fromJsonTree(jsonObj);
              for (Map.Entry<String, JsonElement> entry : jsonObj.entrySet()) {
                if (!openapiFields.contains(entry.getKey())) {
                  if (entry.getValue().isJsonPrimitive()) { // primitive type
@@ -322,18 +322,18 @@ public class SearchSandboxesResult {
   }
 
   /**
-   * Create an instance of SearchSandboxesResult given an JSON string
+   * Create an instance of ListSandboxesResponse given an JSON string
    *
    * @param jsonString JSON string
-   * @return An instance of SearchSandboxesResult
-   * @throws IOException if the JSON string is invalid with respect to SearchSandboxesResult
+   * @return An instance of ListSandboxesResponse
+   * @throws IOException if the JSON string is invalid with respect to ListSandboxesResponse
    */
-  public static SearchSandboxesResult fromJson(String jsonString) throws IOException {
-    return JSON.getGson().fromJson(jsonString, SearchSandboxesResult.class);
+  public static ListSandboxesResponse fromJson(String jsonString) throws IOException {
+    return JSON.getGson().fromJson(jsonString, ListSandboxesResponse.class);
   }
 
   /**
-   * Convert an instance of SearchSandboxesResult to an JSON string
+   * Convert an instance of ListSandboxesResponse to an JSON string
    *
    * @return JSON string
    */

@@ -8,6 +8,7 @@ import { OpensearchClient } from 'nestjs-opensearch'
 import { Search_RequestBody } from '@opensearch-project/opensearch/api/index.js'
 import { QueryContainer } from '@opensearch-project/opensearch/api/_types/_common.query_dsl.js'
 import { Sandbox } from '../entities/sandbox.entity'
+import { SandboxLastActivity } from '../entities/sandbox-last-activity.entity'
 import { SandboxState } from '../enums/sandbox-state.enum'
 import { SandboxDesiredState } from '../enums/sandbox-desired-state.enum'
 import { TypedConfigService } from '../../config/typed-config.service'
@@ -332,9 +333,14 @@ export class SandboxOpenSearchSearchAdapter implements SandboxSearchAdapter, OnM
     sandbox.autoArchiveInterval = source.autoArchiveInterval
     sandbox.autoDeleteInterval = source.autoDeleteInterval
     sandbox.createdAt = source.createdAt ? new Date(source.createdAt) : undefined
-    sandbox.updatedAt = source.lastActivityAt ? new Date(source.lastActivityAt) : undefined
-    // TODO: last activity ingestion + mapping
-    // sandbox.lastActivityAt = source.lastActivityAt ? new Date(source.lastActivityAt) : undefined
+    sandbox.updatedAt = source.updatedAt ? new Date(source.updatedAt) : undefined
+
+    if (source.lastActivityAt) {
+      const lastActivity = new SandboxLastActivity()
+      lastActivity.sandboxId = source.id
+      lastActivity.lastActivityAt = new Date(source.lastActivityAt)
+      sandbox.lastActivityAt = lastActivity
+    }
 
     // note: toolbox proxy URL is resolved in the service layer
     return SandboxDto.fromSandbox(sandbox, '')
