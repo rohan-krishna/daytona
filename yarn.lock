@@ -16835,9 +16835,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"astro@npm:6.1.5":
-  version: 6.1.5
-  resolution: "astro@npm:6.1.5"
+"astro@npm:6.1.6":
+  version: 6.1.6
+  resolution: "astro@npm:6.1.6"
   dependencies:
     "@astrojs/compiler": "npm:^3.0.1"
     "@astrojs/internal-helpers": "npm:0.8.0"
@@ -16899,7 +16899,7 @@ __metadata:
       optional: true
   bin:
     astro: bin/astro.mjs
-  checksum: 10c0/f853234dcf65ed2c8546a781974197f3059c7855189f0aa226a2f78ae808368753c2bb26ca9de5801b5e95af751b057d9d725f0b0aef5eeb1f44b73f80c9bd06
+  checksum: 10c0/4db747ce47fe236a5c7c702ab12ece224c0b38a83422c3872e24fbf7a7d0ba2dbc263a0cd5fc35ba13b59945b27e40aaca2d2fa84b8003c18f715a3110f453ff
   languageName: node
   linkType: hard
 
@@ -19884,7 +19884,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.2.0"
     "@vitest/ui": "npm:^1.3.1"
     algoliasearch: "npm:^5.30.0"
-    astro: "npm:6.1.5"
+    astro: "npm:6.1.6"
     astro-expressive-code: "npm:^0.41.2"
     autoprefixer: "npm:10.4.13"
     axios: "npm:^1.13.5"
