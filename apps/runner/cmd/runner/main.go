@@ -5,12 +5,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/daytonaio/common-go/pkg/log"
 	"github.com/daytonaio/common-go/pkg/telemetry"
 	"github.com/daytonaio/runner/cmd/runner/config"
@@ -29,6 +32,7 @@ import (
 	"github.com/daytonaio/runner/pkg/sshgateway"
 	"github.com/daytonaio/runner/pkg/telemetry/filters"
 	"github.com/daytonaio/runner/pkg/volume"
+	"github.com/daytonaio/runner/pkg/volume/incontainer"
 	"github.com/daytonaio/runner/pkg/volume/s3fuse"
 	"github.com/docker/docker/client"
 	"github.com/lmittmann/tint"
@@ -150,11 +154,24 @@ func run() int {
 		AWSSecretAccessKey: cfg.AWSSecretAccessKey,
 	}, logger))
 
+	// Experimental in-container mounter: registered only when the operator
+	// has both (a) provided a mount-s3 binary on the host to bind-mount into
+	// sandboxes and (b) configured an IAM role the runner can AssumeRole on
+	// to mint bucket-scoped, short-lived credentials. When either is missing
+	// the backend is disabled and organizations that select it silently fall
+	// back to the default backend.
+	experimentalVolumeMounter, err := maybeBuildExperimentalMounter(ctx, cfg, logger)
+	if err != nil {
+		logger.Error("Failed to initialize experimental volume backend", "error", err)
+		return 2
+	}
+
 	dockerClient, err := docker.NewDockerClient(ctx, docker.DockerClientConfig{
 		ApiClient:                    cli,
 		BackupInfoCache:              backupInfoCache,
 		Logger:                       logger,
 		DefaultVolumeMounter:         defaultVolumeMounter,
+		ExperimentalVolumeMounter:    experimentalVolumeMounter,
 		DaemonPath:                   daemonPath,
 		ComputerUsePluginPath:        pluginPath,
 		NetRulesManager:              netRulesManager,
@@ -325,4 +342,59 @@ func run() int {
 		logger.Error("Docker monitor error", "error", err)
 		return 1
 	}
+}
+
+// maybeBuildExperimentalMounter constructs the in-container volume mounter
+// when the operator has configured the prerequisites, or returns (nil, nil)
+// to indicate the backend stays disabled (callers of resolveVolumeMounter
+// already silently fall back to the default backend in that case).
+//
+// A non-nil error is returned only for configurations that look intentional
+// but can't be honored — e.g. MOUNT_S3_BINARY_PATH set but the binary isn't
+// usable — so the runner fails fast on operator misconfiguration.
+func maybeBuildExperimentalMounter(ctx context.Context, cfg *config.Config, logger *slog.Logger) (volume.Mounter, error) {
+	// Both inputs must be configured; if either is empty we treat the
+	// experimental backend as "not deployed" and exit cleanly.
+	if cfg.MountS3BinaryPath == "" && cfg.VolumeAssumeRoleARN == "" {
+		return nil, nil
+	}
+	if cfg.MountS3BinaryPath == "" {
+		logger.Warn("VOLUME_ASSUME_ROLE_ARN set but MOUNT_S3_BINARY_PATH is empty; experimental volume backend disabled")
+		return nil, nil
+	}
+	if cfg.VolumeAssumeRoleARN == "" {
+		logger.Warn("MOUNT_S3_BINARY_PATH set but VOLUME_ASSUME_ROLE_ARN is empty; experimental volume backend disabled")
+		return nil, nil
+	}
+
+	if _, err := os.Stat(cfg.MountS3BinaryPath); err != nil {
+		return nil, fmt.Errorf("MOUNT_S3_BINARY_PATH not accessible: %w", err)
+	}
+
+	// Load the runner's own AWS credentials via the default chain. This
+	// picks up env vars, EC2 instance role, ECS task role, etc. The runner's
+	// base identity only needs sts:AssumeRole on VolumeAssumeRoleARN — it
+	// never needs direct S3 permissions for this backend.
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(cfg.AWSRegion))
+	if err != nil {
+		return nil, fmt.Errorf("load AWS config: %w", err)
+	}
+
+	stsClient := sts.NewFromConfig(awsCfg)
+
+	mounter := incontainer.NewMounter(incontainer.Config{
+		AWSRegion:             cfg.AWSRegion,
+		AWSEndpointURL:        cfg.AWSEndpointUrl,
+		AssumeRoleARN:         cfg.VolumeAssumeRoleARN,
+		SessionDuration:       cfg.VolumeAssumeRoleSessionDuration,
+		MountS3BinaryHostPath: cfg.MountS3BinaryPath,
+	}, stsClient)
+
+	logger.Info(
+		"Experimental in-container volume backend enabled",
+		"mountS3Binary", cfg.MountS3BinaryPath,
+		"assumeRole", cfg.VolumeAssumeRoleARN,
+		"sessionDuration", cfg.VolumeAssumeRoleSessionDuration.String(),
+	)
+	return mounter, nil
 }

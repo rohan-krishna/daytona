@@ -25,3 +25,38 @@ type Mounter interface {
 	// if the backend mounts synchronously.
 	WaitUntilReady(ctx context.Context, mountPath string) error
 }
+
+// Volume describes a single volume to mount. It mirrors dto.VolumeDTO in a
+// package-neutral shape so the volume package can stay free of cross-package
+// dependencies.
+type Volume struct {
+	VolumeID  string `json:"volumeId"`
+	MountPath string `json:"mountPath"`
+	Subpath   string `json:"subpath,omitempty"`
+}
+
+// InContainerMounter is an optional extension implemented by mounters that
+// perform their actual mount inside the sandbox container rather than on the
+// runner host. When the runner sees a mounter satisfies this interface it:
+//   - skips host-side mounting and bind creation
+//   - appends ContainerBinds to the sandbox HostConfig.Binds
+//   - appends ContainerEnv to the sandbox env
+//
+// The in-container daemon is expected to consume the injected env and perform
+// the mount before user code runs.
+type InContainerMounter interface {
+	Mounter
+
+	// ContainerBinds returns host->container bind strings that must be added
+	// to HostConfig.Binds (e.g. the mount-s3 static binary mounted RO).
+	// Independent of the volume list — applied on every sandbox that uses
+	// this mounter.
+	ContainerBinds() []string
+
+	// ContainerEnv returns env vars that must be added to the sandbox (volume
+	// spec + credentials + binary path). Implementations may perform network
+	// calls (e.g. STS AssumeRole to mint scoped, short-lived credentials) and
+	// should honor the provided context. Returns nil when there are no
+	// volumes to mount.
+	ContainerEnv(ctx context.Context, volumes []Volume) ([]string, error)
+}

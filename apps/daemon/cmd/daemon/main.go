@@ -24,6 +24,7 @@ import (
 	"github.com/daytonaio/daemon/pkg/ssh"
 	"github.com/daytonaio/daemon/pkg/terminal"
 	"github.com/daytonaio/daemon/pkg/toolbox"
+	"github.com/daytonaio/daemon/pkg/volumemount"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -122,6 +123,13 @@ func run() int {
 			slog.SetDefault(logger)
 		}
 	}
+
+	// Mount any experimental-backend volumes inside the sandbox BEFORE any
+	// user entrypoint or daemon service starts. No-op when the runner did not
+	// inject an in-container volume spec.
+	mountCtx, mountCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	volumemount.MountAll(mountCtx, logger)
+	mountCancel()
 
 	sessionService := session.NewSessionService(logger, configDir, c.TerminationGracePeriod, c.TerminationCheckInterval)
 

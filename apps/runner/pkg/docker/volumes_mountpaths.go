@@ -26,6 +26,12 @@ func getVolumeMountBasePath() string {
 }
 
 func (d *DockerClient) getVolumesMountPathBinds(ctx context.Context, volumes []dto.VolumeDTO, mounter volume.Mounter) ([]string, error) {
+	// In-container mounters don't create any host mounts or binds — the mount
+	// happens inside the sandbox via the daemon. Return early.
+	if _, ok := mounter.(volume.InContainerMounter); ok {
+		return nil, nil
+	}
+
 	volumeMountPathBinds := make([]string, 0)
 
 	// Tracks volumes with mounts already ensured in this call,

@@ -17,29 +17,45 @@ import (
 )
 
 type Config struct {
-	DaytonaApiUrl                      string        `envconfig:"DAYTONA_API_URL"`
-	ApiToken                           string        `envconfig:"DAYTONA_RUNNER_TOKEN"`
-	ApiPort                            int           `envconfig:"API_PORT"`
-	ApiLogRequests                     bool          `envconfig:"API_LOG_REQUESTS" default:"false"`
-	TLSCertFile                        string        `envconfig:"TLS_CERT_FILE"`
-	TLSKeyFile                         string        `envconfig:"TLS_KEY_FILE"`
-	EnableTLS                          bool          `envconfig:"ENABLE_TLS"`
-	OtelLoggingEnabled                 bool          `envconfig:"OTEL_LOGGING_ENABLED"`
-	OtelTracingEnabled                 bool          `envconfig:"OTEL_TRACING_ENABLED"`
-	OtelEndpoint                       string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
-	OtelHeaders                        string        `envconfig:"OTEL_EXPORTER_OTLP_HEADERS"`
-	BackupInfoCacheRetention           time.Duration `envconfig:"BACKUP_INFO_CACHE_RETENTION" default:"168h" validate:"min=5m"`
-	Environment                        string        `envconfig:"ENVIRONMENT"`
-	ContainerRuntime                   string        `envconfig:"CONTAINER_RUNTIME"`
-	ContainerNetwork                   string        `envconfig:"CONTAINER_NETWORK"`
-	InterSandboxNetworkEnabled         bool          `envconfig:"INTER_SANDBOX_NETWORK_ENABLED" default:"true"`
-	LogFilePath                        string        `envconfig:"LOG_FILE_PATH"`
-	AWSRegion                          string        `envconfig:"AWS_REGION"`
-	AWSEndpointUrl                     string        `envconfig:"AWS_ENDPOINT_URL"`
-	AWSAccessKeyId                     string        `envconfig:"AWS_ACCESS_KEY_ID"`
-	AWSSecretAccessKey                 string        `envconfig:"AWS_SECRET_ACCESS_KEY"`
-	AWSDefaultBucket                   string        `envconfig:"AWS_DEFAULT_BUCKET"`
-	VolumeBackend                      string        `envconfig:"VOLUME_BACKEND" default:"s3"`
+	DaytonaApiUrl              string        `envconfig:"DAYTONA_API_URL"`
+	ApiToken                   string        `envconfig:"DAYTONA_RUNNER_TOKEN"`
+	ApiPort                    int           `envconfig:"API_PORT"`
+	ApiLogRequests             bool          `envconfig:"API_LOG_REQUESTS" default:"false"`
+	TLSCertFile                string        `envconfig:"TLS_CERT_FILE"`
+	TLSKeyFile                 string        `envconfig:"TLS_KEY_FILE"`
+	EnableTLS                  bool          `envconfig:"ENABLE_TLS"`
+	OtelLoggingEnabled         bool          `envconfig:"OTEL_LOGGING_ENABLED"`
+	OtelTracingEnabled         bool          `envconfig:"OTEL_TRACING_ENABLED"`
+	OtelEndpoint               string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
+	OtelHeaders                string        `envconfig:"OTEL_EXPORTER_OTLP_HEADERS"`
+	BackupInfoCacheRetention   time.Duration `envconfig:"BACKUP_INFO_CACHE_RETENTION" default:"168h" validate:"min=5m"`
+	Environment                string        `envconfig:"ENVIRONMENT"`
+	ContainerRuntime           string        `envconfig:"CONTAINER_RUNTIME"`
+	ContainerNetwork           string        `envconfig:"CONTAINER_NETWORK"`
+	InterSandboxNetworkEnabled bool          `envconfig:"INTER_SANDBOX_NETWORK_ENABLED" default:"true"`
+	LogFilePath                string        `envconfig:"LOG_FILE_PATH"`
+	AWSRegion                  string        `envconfig:"AWS_REGION"`
+	AWSEndpointUrl             string        `envconfig:"AWS_ENDPOINT_URL"`
+	AWSAccessKeyId             string        `envconfig:"AWS_ACCESS_KEY_ID"`
+	AWSSecretAccessKey         string        `envconfig:"AWS_SECRET_ACCESS_KEY"`
+	AWSDefaultBucket           string        `envconfig:"AWS_DEFAULT_BUCKET"`
+	VolumeBackend              string        `envconfig:"VOLUME_BACKEND" default:"s3"`
+	// MountS3BinaryPath is the host path to a mount-s3 binary that will be
+	// bind-mounted into sandboxes that opt into the experimental in-container
+	// volume backend. When empty, the experimental backend is disabled and
+	// organizations that select it silently fall back to the default backend.
+	MountS3BinaryPath string `envconfig:"MOUNT_S3_BINARY_PATH"`
+	// VolumeAssumeRoleARN is the IAM role the runner calls sts:AssumeRole on
+	// to mint bucket-scoped, short-lived credentials that get injected into
+	// sandboxes using the experimental in-container volume backend. The
+	// runner's base AWS credentials (env / EC2 / ECS chain) must have
+	// sts:AssumeRole permission on this role. When empty, the experimental
+	// backend is disabled.
+	VolumeAssumeRoleARN string `envconfig:"VOLUME_ASSUME_ROLE_ARN"`
+	// VolumeAssumeRoleSessionDuration is the TTL of the minted session
+	// credentials. Must be <= the role's MaxSessionDuration (AWS default 1h;
+	// raise to up to 12h on the role if you want longer sandboxes).
+	VolumeAssumeRoleSessionDuration    time.Duration `envconfig:"VOLUME_ASSUME_ROLE_SESSION_DURATION" default:"12h" validate:"min=15m,max=12h"`
 	ResourceLimitsDisabled             bool          `envconfig:"RESOURCE_LIMITS_DISABLED"`
 	DaemonStartTimeoutSec              int           `envconfig:"DAEMON_START_TIMEOUT_SEC"`
 	SandboxStartTimeoutSec             int           `envconfig:"SANDBOX_START_TIMEOUT_SEC"`
