@@ -41,7 +41,8 @@ app.use('/docs', express.static('client/'))
 app.use((req, res, next) => {
   const match = req.path.match(/^\/docs\/([a-zA-Z][^/.]*)(\/.*)?$/)
   if (match && !knownLocales.has(match[1])) {
-    req.url = `/docs/en/${match[1]}${match[2] || '/'}`
+    const qs = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''
+    req.url = `/docs/${gtConfig.defaultLocale}/${match[1]}${match[2] || '/'}${qs}`
   }
   next()
 })
