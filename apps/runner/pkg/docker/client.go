@@ -14,6 +14,7 @@ import (
 	"github.com/daytonaio/runner/pkg/cache"
 	"github.com/daytonaio/runner/pkg/common"
 	"github.com/daytonaio/runner/pkg/netrules"
+	"github.com/daytonaio/runner/pkg/volume"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/system"
 	"github.com/docker/docker/client"
@@ -23,10 +24,8 @@ type DockerClientConfig struct {
 	ApiClient                    client.APIClient
 	BackupInfoCache              *cache.BackupInfoCache
 	Logger                       *slog.Logger
-	AWSRegion                    string
-	AWSEndpointUrl               string
-	AWSAccessKeyId               string
-	AWSSecretAccessKey           string
+	DefaultVolumeMounter         volume.Mounter
+	ExperimentalVolumeMounter    volume.Mounter // optional; when nil, experimental backend is unavailable
 	DaemonPath                   string
 	ComputerUsePluginPath        string
 	NetRulesManager              *netrules.NetRulesManager
@@ -119,10 +118,8 @@ func NewDockerClient(ctx context.Context, config DockerClientConfig) (*DockerCli
 		backupInfoCache:              config.BackupInfoCache,
 		pullTracker:                  &common.Tracker[string]{},
 		logger:                       logger,
-		awsRegion:                    config.AWSRegion,
-		awsEndpointUrl:               config.AWSEndpointUrl,
-		awsAccessKeyId:               config.AWSAccessKeyId,
-		awsSecretAccessKey:           config.AWSSecretAccessKey,
+		defaultVolumeMounter:         config.DefaultVolumeMounter,
+		experimentalVolumeMounter:    config.ExperimentalVolumeMounter,
 		volumeMutexes:                make(map[string]*sync.Mutex),
 		daemonPath:                   config.DaemonPath,
 		computerUsePluginPath:        config.ComputerUsePluginPath,
@@ -149,6 +146,18 @@ func (d *DockerClient) ApiClient() client.APIClient {
 	return d.apiClient
 }
 
+const volumeBackendMetadataKey = "volumeBackend"
+
+// resolveVolumeMounter selects the volume mounter based on the per-sandbox
+// metadata key. If the org requests "experimental" and the runner has an
+// experimental mounter configured, use it; otherwise fall back to the default.
+func (d *DockerClient) resolveVolumeMounter(metadata map[string]string) volume.Mounter {
+	if metadata[volumeBackendMetadataKey] == "experimental" && d.experimentalVolumeMounter != nil {
+		return d.experimentalVolumeMounter
+	}
+	return d.defaultVolumeMounter
+}
+
 const RUNNER_BRIDGE_NETWORK_NAME = "runner-bridge"
 
 type DockerClient struct {
@@ -156,10 +165,8 @@ type DockerClient struct {
 	backupInfoCache              *cache.BackupInfoCache
 	pullTracker                  *common.Tracker[string]
 	logger                       *slog.Logger
-	awsRegion                    string
-	awsEndpointUrl               string
-	awsAccessKeyId               string
-	awsSecretAccessKey           string
+	defaultVolumeMounter         volume.Mounter
+	experimentalVolumeMounter    volume.Mounter // nil when no experimental backend is configured
 	volumeMutexes                map[string]*sync.Mutex
 	volumeMutexesMutex           sync.Mutex
 	daemonPath                   string

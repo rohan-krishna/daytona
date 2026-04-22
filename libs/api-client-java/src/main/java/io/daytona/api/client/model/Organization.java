@@ -137,6 +137,11 @@ public class Organization {
   @javax.annotation.Nullable
   private String defaultRegionId;
 
+  public static final String SERIALIZED_NAME_DEFAULT_VOLUME_BACKEND = "defaultVolumeBackend";
+  @SerializedName(SERIALIZED_NAME_DEFAULT_VOLUME_BACKEND)
+  @javax.annotation.Nonnull
+  private String defaultVolumeBackend;
+
   public static final String SERIALIZED_NAME_AUTHENTICATED_RATE_LIMIT = "authenticatedRateLimit";
   @SerializedName(SERIALIZED_NAME_AUTHENTICATED_RATE_LIMIT)
   @javax.annotation.Nullable
@@ -498,6 +503,25 @@ public class Organization {
   }
 
 
+  public Organization defaultVolumeBackend(@javax.annotation.Nonnull String defaultVolumeBackend) {
+    this.defaultVolumeBackend = defaultVolumeBackend;
+    return this;
+  }
+
+  /**
+   * Default volume backend for sandbox volumes
+   * @return defaultVolumeBackend
+   */
+  @javax.annotation.Nonnull
+  public String getDefaultVolumeBackend() {
+    return defaultVolumeBackend;
+  }
+
+  public void setDefaultVolumeBackend(@javax.annotation.Nonnull String defaultVolumeBackend) {
+    this.defaultVolumeBackend = defaultVolumeBackend;
+  }
+
+
   public Organization authenticatedRateLimit(@javax.annotation.Nullable BigDecimal authenticatedRateLimit) {
     this.authenticatedRateLimit = authenticatedRateLimit;
     return this;
@@ -702,6 +726,7 @@ public class Organization {
         Objects.equals(this.snapshotDeactivationTimeoutMinutes, organization.snapshotDeactivationTimeoutMinutes) &&
         Objects.equals(this.sandboxLimitedNetworkEgress, organization.sandboxLimitedNetworkEgress) &&
         Objects.equals(this.defaultRegionId, organization.defaultRegionId) &&
+        Objects.equals(this.defaultVolumeBackend, organization.defaultVolumeBackend) &&
         Objects.equals(this.authenticatedRateLimit, organization.authenticatedRateLimit) &&
         Objects.equals(this.sandboxCreateRateLimit, organization.sandboxCreateRateLimit) &&
         Objects.equals(this.sandboxLifecycleRateLimit, organization.sandboxLifecycleRateLimit) &&
@@ -714,7 +739,7 @@ public class Organization {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, createdBy, personal, createdAt, updatedAt, suspended, suspendedAt, suspensionReason, suspendedUntil, suspensionCleanupGracePeriodHours, maxCpuPerSandbox, maxMemoryPerSandbox, maxDiskPerSandbox, snapshotDeactivationTimeoutMinutes, sandboxLimitedNetworkEgress, defaultRegionId, authenticatedRateLimit, sandboxCreateRateLimit, sandboxLifecycleRateLimit, experimentalConfig, authenticatedRateLimitTtlSeconds, sandboxCreateRateLimitTtlSeconds, sandboxLifecycleRateLimitTtlSeconds, additionalProperties);
+    return Objects.hash(id, name, createdBy, personal, createdAt, updatedAt, suspended, suspendedAt, suspensionReason, suspendedUntil, suspensionCleanupGracePeriodHours, maxCpuPerSandbox, maxMemoryPerSandbox, maxDiskPerSandbox, snapshotDeactivationTimeoutMinutes, sandboxLimitedNetworkEgress, defaultRegionId, defaultVolumeBackend, authenticatedRateLimit, sandboxCreateRateLimit, sandboxLifecycleRateLimit, experimentalConfig, authenticatedRateLimitTtlSeconds, sandboxCreateRateLimitTtlSeconds, sandboxLifecycleRateLimitTtlSeconds, additionalProperties);
   }
 
   @Override
@@ -738,6 +763,7 @@ public class Organization {
     sb.append("    snapshotDeactivationTimeoutMinutes: ").append(toIndentedString(snapshotDeactivationTimeoutMinutes)).append("\n");
     sb.append("    sandboxLimitedNetworkEgress: ").append(toIndentedString(sandboxLimitedNetworkEgress)).append("\n");
     sb.append("    defaultRegionId: ").append(toIndentedString(defaultRegionId)).append("\n");
+    sb.append("    defaultVolumeBackend: ").append(toIndentedString(defaultVolumeBackend)).append("\n");
     sb.append("    authenticatedRateLimit: ").append(toIndentedString(authenticatedRateLimit)).append("\n");
     sb.append("    sandboxCreateRateLimit: ").append(toIndentedString(sandboxCreateRateLimit)).append("\n");
     sb.append("    sandboxLifecycleRateLimit: ").append(toIndentedString(sandboxLifecycleRateLimit)).append("\n");
@@ -785,6 +811,7 @@ public class Organization {
     openapiFields.add("snapshotDeactivationTimeoutMinutes");
     openapiFields.add("sandboxLimitedNetworkEgress");
     openapiFields.add("defaultRegionId");
+    openapiFields.add("defaultVolumeBackend");
     openapiFields.add("authenticatedRateLimit");
     openapiFields.add("sandboxCreateRateLimit");
     openapiFields.add("sandboxLifecycleRateLimit");
@@ -811,6 +838,7 @@ public class Organization {
     openapiRequiredFields.add("maxDiskPerSandbox");
     openapiRequiredFields.add("snapshotDeactivationTimeoutMinutes");
     openapiRequiredFields.add("sandboxLimitedNetworkEgress");
+    openapiRequiredFields.add("defaultVolumeBackend");
     openapiRequiredFields.add("authenticatedRateLimit");
     openapiRequiredFields.add("sandboxCreateRateLimit");
     openapiRequiredFields.add("sandboxLifecycleRateLimit");
@@ -854,6 +882,9 @@ public class Organization {
       }
       if ((jsonObj.get("defaultRegionId") != null && !jsonObj.get("defaultRegionId").isJsonNull()) && !jsonObj.get("defaultRegionId").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format("Expected the field `defaultRegionId` to be a primitive type in the JSON string but got `%s`", jsonObj.get("defaultRegionId").toString()));
+      }
+      if (!jsonObj.get("defaultVolumeBackend").isJsonPrimitive()) {
+        throw new IllegalArgumentException(String.format("Expected the field `defaultVolumeBackend` to be a primitive type in the JSON string but got `%s`", jsonObj.get("defaultVolumeBackend").toString()));
       }
   }
 

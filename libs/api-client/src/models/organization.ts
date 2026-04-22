@@ -123,6 +123,12 @@ export interface Organization {
      */
     'defaultRegionId'?: string;
     /**
+     * Default volume backend for sandbox volumes
+     * @type {string}
+     * @memberof Organization
+     */
+    'defaultVolumeBackend': string;
+    /**
      * Authenticated rate limit per minute
      * @type {number}
      * @memberof Organization

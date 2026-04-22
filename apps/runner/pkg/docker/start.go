@@ -49,7 +49,8 @@ func (d *DockerClient) Start(ctx context.Context, containerId string, authToken 
 	if volumesJSON, ok := metadata["volumes"]; ok {
 		var volumes []dto.VolumeDTO
 		if err := json.Unmarshal([]byte(volumesJSON), &volumes); err == nil && len(volumes) > 0 {
-			_, err = d.getVolumesMountPathBinds(ctx, volumes)
+			mounter := d.resolveVolumeMounter(metadata)
+			_, err = d.getVolumesMountPathBinds(ctx, volumes, mounter)
 			if err != nil {
 				d.logger.ErrorContext(ctx, "Failed to ensure volume FUSE mounts", "error", err)
 			}

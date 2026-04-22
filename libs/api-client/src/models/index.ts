@@ -158,6 +158,7 @@ export * from './trace-summary';
 export * from './update-docker-registry';
 export * from './update-job-status';
 export * from './update-organization-default-region';
+export * from './update-organization-default-volume-backend';
 export * from './update-organization-invitation';
 export * from './update-organization-member-access';
 export * from './update-organization-quota';

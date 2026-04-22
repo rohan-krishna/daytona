@@ -39,6 +39,7 @@ type Config struct {
 	AWSAccessKeyId                     string        `envconfig:"AWS_ACCESS_KEY_ID"`
 	AWSSecretAccessKey                 string        `envconfig:"AWS_SECRET_ACCESS_KEY"`
 	AWSDefaultBucket                   string        `envconfig:"AWS_DEFAULT_BUCKET"`
+	VolumeBackend                      string        `envconfig:"VOLUME_BACKEND" default:"s3"`
 	ResourceLimitsDisabled             bool          `envconfig:"RESOURCE_LIMITS_DISABLED"`
 	DaemonStartTimeoutSec              int           `envconfig:"DAEMON_START_TIMEOUT_SEC"`
 	SandboxStartTimeoutSec             int           `envconfig:"SANDBOX_START_TIMEOUT_SEC"`

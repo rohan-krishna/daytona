@@ -215,6 +215,7 @@ if TYPE_CHECKING:
     from daytona_api_client.models.update_docker_registry import UpdateDockerRegistry
     from daytona_api_client.models.update_job_status import UpdateJobStatus
     from daytona_api_client.models.update_organization_default_region import UpdateOrganizationDefaultRegion
+    from daytona_api_client.models.update_organization_default_volume_backend import UpdateOrganizationDefaultVolumeBackend
     from daytona_api_client.models.update_organization_invitation import UpdateOrganizationInvitation
     from daytona_api_client.models.update_organization_member_access import UpdateOrganizationMemberAccess
     from daytona_api_client.models.update_organization_quota import UpdateOrganizationQuota
@@ -428,6 +429,7 @@ _DYNAMIC_IMPORTS: dict[str, str] = {
     "UpdateDockerRegistry": "daytona_api_client.models.update_docker_registry",
     "UpdateJobStatus": "daytona_api_client.models.update_job_status",
     "UpdateOrganizationDefaultRegion": "daytona_api_client.models.update_organization_default_region",
+    "UpdateOrganizationDefaultVolumeBackend": "daytona_api_client.models.update_organization_default_volume_backend",
     "UpdateOrganizationInvitation": "daytona_api_client.models.update_organization_invitation",
     "UpdateOrganizationMemberAccess": "daytona_api_client.models.update_organization_member_access",
     "UpdateOrganizationQuota": "daytona_api_client.models.update_organization_quota",
@@ -655,6 +657,7 @@ __all__ = [
     "UpdateDockerRegistry",
     "UpdateJobStatus",
     "UpdateOrganizationDefaultRegion",
+    "UpdateOrganizationDefaultVolumeBackend",
     "UpdateOrganizationInvitation",
     "UpdateOrganizationMemberAccess",
     "UpdateOrganizationQuota",

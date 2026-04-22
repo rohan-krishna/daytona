@@ -66,6 +66,9 @@ module DaytonaApiClient
     # Default region ID
     attr_accessor :default_region_id
 
+    # Default volume backend for sandbox volumes
+    attr_accessor :default_volume_backend
+
     # Authenticated rate limit per minute
     attr_accessor :authenticated_rate_limit
 
@@ -107,6 +110,7 @@ module DaytonaApiClient
         :'snapshot_deactivation_timeout_minutes' => :'snapshotDeactivationTimeoutMinutes',
         :'sandbox_limited_network_egress' => :'sandboxLimitedNetworkEgress',
         :'default_region_id' => :'defaultRegionId',
+        :'default_volume_backend' => :'defaultVolumeBackend',
         :'authenticated_rate_limit' => :'authenticatedRateLimit',
         :'sandbox_create_rate_limit' => :'sandboxCreateRateLimit',
         :'sandbox_lifecycle_rate_limit' => :'sandboxLifecycleRateLimit',
@@ -147,6 +151,7 @@ module DaytonaApiClient
         :'snapshot_deactivation_timeout_minutes' => :'Float',
         :'sandbox_limited_network_egress' => :'Boolean',
         :'default_region_id' => :'String',
+        :'default_volume_backend' => :'String',
         :'authenticated_rate_limit' => :'Float',
         :'sandbox_create_rate_limit' => :'Float',
         :'sandbox_lifecycle_rate_limit' => :'Float',
@@ -285,6 +290,12 @@ module DaytonaApiClient
         self.default_region_id = attributes[:'default_region_id']
       end
 
+      if attributes.key?(:'default_volume_backend')
+        self.default_volume_backend = attributes[:'default_volume_backend']
+      else
+        self.default_volume_backend = nil
+      end
+
       if attributes.key?(:'authenticated_rate_limit')
         self.authenticated_rate_limit = attributes[:'authenticated_rate_limit']
       else
@@ -397,6 +408,10 @@ module DaytonaApiClient
         invalid_properties.push('invalid value for "sandbox_limited_network_egress", sandbox_limited_network_egress cannot be nil.')
       end
 
+      if @default_volume_backend.nil?
+        invalid_properties.push('invalid value for "default_volume_backend", default_volume_backend cannot be nil.')
+      end
+
       if @experimental_config.nil?
         invalid_properties.push('invalid value for "experimental_config", experimental_config cannot be nil.')
       end
@@ -424,6 +439,7 @@ module DaytonaApiClient
       return false if @max_disk_per_sandbox.nil?
       return false if @snapshot_deactivation_timeout_minutes.nil?
       return false if @sandbox_limited_network_egress.nil?
+      return false if @default_volume_backend.nil?
       return false if @experimental_config.nil?
       true
     end
@@ -589,6 +605,16 @@ module DaytonaApiClient
     end
 
     # Custom attribute writer method with validation
+    # @param [Object] default_volume_backend Value to be assigned
+    def default_volume_backend=(default_volume_backend)
+      if default_volume_backend.nil?
+        fail ArgumentError, 'default_volume_backend cannot be nil'
+      end
+
+      @default_volume_backend = default_volume_backend
+    end
+
+    # Custom attribute writer method with validation
     # @param [Object] experimental_config Value to be assigned
     def experimental_config=(experimental_config)
       if experimental_config.nil?
@@ -620,6 +646,7 @@ module DaytonaApiClient
           snapshot_deactivation_timeout_minutes == o.snapshot_deactivation_timeout_minutes &&
           sandbox_limited_network_egress == o.sandbox_limited_network_egress &&
           default_region_id == o.default_region_id &&
+          default_volume_backend == o.default_volume_backend &&
           authenticated_rate_limit == o.authenticated_rate_limit &&
           sandbox_create_rate_limit == o.sandbox_create_rate_limit &&
           sandbox_lifecycle_rate_limit == o.sandbox_lifecycle_rate_limit &&
@@ -638,7 +665,7 @@ module DaytonaApiClient
     # Calculates hash code according to all attributes.
     # @return [Integer] Hash code
     def hash
-      [id, name, created_by, personal, created_at, updated_at, suspended, suspended_at, suspension_reason, suspended_until, suspension_cleanup_grace_period_hours, max_cpu_per_sandbox, max_memory_per_sandbox, max_disk_per_sandbox, snapshot_deactivation_timeout_minutes, sandbox_limited_network_egress, default_region_id, authenticated_rate_limit, sandbox_create_rate_limit, sandbox_lifecycle_rate_limit, experimental_config, authenticated_rate_limit_ttl_seconds, sandbox_create_rate_limit_ttl_seconds, sandbox_lifecycle_rate_limit_ttl_seconds].hash
+      [id, name, created_by, personal, created_at, updated_at, suspended, suspended_at, suspension_reason, suspended_until, suspension_cleanup_grace_period_hours, max_cpu_per_sandbox, max_memory_per_sandbox, max_disk_per_sandbox, snapshot_deactivation_timeout_minutes, sandbox_limited_network_egress, default_region_id, default_volume_backend, authenticated_rate_limit, sandbox_create_rate_limit, sandbox_lifecycle_rate_limit, experimental_config, authenticated_rate_limit_ttl_seconds, sandbox_create_rate_limit_ttl_seconds, sandbox_lifecycle_rate_limit_ttl_seconds].hash
     end
 
     # Builds the object from hash
