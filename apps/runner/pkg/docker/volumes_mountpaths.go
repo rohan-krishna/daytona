@@ -130,14 +130,10 @@ func (d *DockerClient) ensureVolumeMounted(ctx context.Context, volumeId string,
 	return nil
 }
 
-// unmountVolume unmounts the volume at the given path.
-// Tries the experimental unmount first (to flush writes), falls back to the default.
+// unmountVolume unmounts the volume at the given host path. Only host-side
+// mounts exist on disk (the in-container backend never creates a host
+// mountpoint), so we always delegate to the default mounter here.
 func (d *DockerClient) unmountVolume(ctx context.Context, mountPath string) error {
-	if d.experimentalVolumeMounter != nil {
-		if err := d.experimentalVolumeMounter.Unmount(ctx, mountPath); err == nil {
-			return nil
-		}
-	}
 	return d.defaultVolumeMounter.Unmount(ctx, mountPath)
 }
 

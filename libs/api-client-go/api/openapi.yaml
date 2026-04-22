@@ -1847,6 +1847,7 @@ paths:
           - region
           - updatedAt
           - createdAt
+          - lastActivityAt
           type: string
         style: form
       - description: Direction to sort by
@@ -9649,7 +9650,7 @@ components:
         defaultRegionId: defaultRegionId
         sandboxCreateRateLimitTtlSeconds: 2.027123023002322
         suspensionReason: suspensionReason
-        defaultVolumeBackend: s3fuse
+        defaultVolumeBackend: s3fuse-legacy
         sandboxLifecycleRateLimit: 9.301444243932576
         suspendedAt: 2000-01-23T04:56:07.000+00:00
         personal: true
@@ -9720,7 +9721,11 @@ components:
           type: string
         defaultVolumeBackend:
           description: Default volume backend for sandbox volumes
-          example: s3fuse
+          enum:
+          - s3fuse-legacy
+          - s3fuse
+          - experimental
+          example: s3fuse-legacy
           type: string
         authenticatedRateLimit:
           description: Authenticated rate limit per minute
@@ -9789,10 +9794,14 @@ components:
     RegionUsageOverview:
       example:
         totalCpuQuota: 0.8008281904610115
+        maxCpuPerSandbox: 7.061401241503109
+        maxDiskPerSandbox: 3.616076749251911
+        maxDiskPerNonEphemeralSandbox: 2.027123023002322
         regionId: regionId
         currentDiskUsage: 2.3021358869347655
         currentMemoryUsage: 5.962133916683182
         currentCpuUsage: 6.027456183070403
+        maxMemoryPerSandbox: 9.301444243932576
         totalMemoryQuota: 1.4658129805029452
         totalDiskQuota: 5.637376656633329
       properties:
@@ -9810,10 +9819,26 @@ components:
           type: number
         currentDiskUsage:
           type: number
+        maxCpuPerSandbox:
+          nullable: true
+          type: number
+        maxMemoryPerSandbox:
+          nullable: true
+          type: number
+        maxDiskPerSandbox:
+          nullable: true
+          type: number
+        maxDiskPerNonEphemeralSandbox:
+          nullable: true
+          type: number
       required:
       - currentCpuUsage
       - currentDiskUsage
       - currentMemoryUsage
+      - maxCpuPerSandbox
+      - maxDiskPerNonEphemeralSandbox
+      - maxDiskPerSandbox
+      - maxMemoryPerSandbox
       - regionId
       - totalCpuQuota
       - totalDiskQuota
@@ -9821,23 +9846,31 @@ components:
       type: object
     OrganizationUsageOverview:
       example:
-        totalSnapshotQuota: 7.061401241503109
-        currentVolumeUsage: 2.027123023002322
-        totalVolumeQuota: 3.616076749251911
-        currentSnapshotUsage: 9.301444243932576
+        totalSnapshotQuota: 4.145608029883936
+        currentVolumeUsage: 1.0246457001441578
+        totalVolumeQuota: 1.2315135367772556
+        currentSnapshotUsage: 7.386281948385884
         regionUsage:
         - totalCpuQuota: 0.8008281904610115
+          maxCpuPerSandbox: 7.061401241503109
+          maxDiskPerSandbox: 3.616076749251911
+          maxDiskPerNonEphemeralSandbox: 2.027123023002322
           regionId: regionId
           currentDiskUsage: 2.3021358869347655
           currentMemoryUsage: 5.962133916683182
           currentCpuUsage: 6.027456183070403
+          maxMemoryPerSandbox: 9.301444243932576
           totalMemoryQuota: 1.4658129805029452
           totalDiskQuota: 5.637376656633329
         - totalCpuQuota: 0.8008281904610115
+          maxCpuPerSandbox: 7.061401241503109
+          maxDiskPerSandbox: 3.616076749251911
+          maxDiskPerNonEphemeralSandbox: 2.027123023002322
           regionId: regionId
           currentDiskUsage: 2.3021358869347655
           currentMemoryUsage: 5.962133916683182
           currentCpuUsage: 6.027456183070403
+          maxMemoryPerSandbox: 9.301444243932576
           totalMemoryQuota: 1.4658129805029452
           totalDiskQuota: 5.637376656633329
       properties:
@@ -10020,14 +10053,18 @@ components:
       type: object
     UpdateOrganizationDefaultVolumeBackend:
       example:
-        defaultVolumeBackend: s3fuse
+        defaultVolumeBackend: s3fuse-legacy
       properties:
         defaultVolumeBackend:
-          description: The default volume backend for the organization
+          description: "The default volume backend for the organization. `s3fuse-legacy`\
+            \ mounts on the runner host using the runner’s AWS credentials (legacy\
+            \ behavior). `s3fuse` and `experimental` mount inside the sandbox using\
+            \ short-lived, bucket-scoped STS credentials."
           enum:
+          - s3fuse-legacy
           - s3fuse
           - experimental
-          example: s3fuse
+          example: s3fuse-legacy
           type: string
       required:
       - defaultVolumeBackend
@@ -10632,6 +10669,7 @@ components:
         memory: 4
         buildInfo: ""
         toolboxProxyUrl: https://proxy.app.daytona.io/toolbox
+        lastActivityAt: 2024-10-01T12:00:00Z
         autoStopInterval: 30
         organizationId: organization123
         createdAt: 2024-10-01T12:00:00Z
@@ -10799,6 +10837,10 @@ components:
           description: The last update timestamp of the sandbox
           example: 2024-10-01T12:00:00Z
           type: string
+        lastActivityAt:
+          description: The last activity timestamp of the sandbox
+          example: 2024-10-01T12:00:00Z
+          type: string
         class:
           deprecated: true
           description: The class of the sandbox
@@ -10845,6 +10887,7 @@ components:
         - memory: 4
           buildInfo: ""
           toolboxProxyUrl: https://proxy.app.daytona.io/toolbox
+          lastActivityAt: 2024-10-01T12:00:00Z
           autoStopInterval: 30
           organizationId: organization123
           createdAt: 2024-10-01T12:00:00Z
@@ -10885,6 +10928,7 @@ components:
         - memory: 4
           buildInfo: ""
           toolboxProxyUrl: https://proxy.app.daytona.io/toolbox
+          lastActivityAt: 2024-10-01T12:00:00Z
           autoStopInterval: 30
           organizationId: organization123
           createdAt: 2024-10-01T12:00:00Z
@@ -13628,6 +13672,7 @@ components:
         memory: 4
         buildInfo: ""
         toolboxProxyUrl: https://proxy.app.daytona.io/toolbox
+        lastActivityAt: 2024-10-01T12:00:00Z
         autoStopInterval: 30
         organizationId: organization123
         createdAt: 2024-10-01T12:00:00Z
@@ -13797,6 +13842,10 @@ components:
           type: string
         updatedAt:
           description: The last update timestamp of the sandbox
+          example: 2024-10-01T12:00:00Z
+          type: string
+        lastActivityAt:
+          description: The last activity timestamp of the sandbox
           example: 2024-10-01T12:00:00Z
           type: string
         class:

@@ -127,7 +127,7 @@ export interface Organization {
      * @type {string}
      * @memberof Organization
      */
-    'defaultVolumeBackend': string;
+    'defaultVolumeBackend': OrganizationDefaultVolumeBackendEnum;
     /**
      * Authenticated rate limit per minute
      * @type {number}
@@ -171,4 +171,13 @@ export interface Organization {
      */
     'sandboxLifecycleRateLimitTtlSeconds': number | null;
 }
+
+export const OrganizationDefaultVolumeBackendEnum = {
+    S3FUSE_LEGACY: 's3fuse-legacy',
+    S3FUSE: 's3fuse',
+    EXPERIMENTAL: 'experimental'
+} as const;
+
+export type OrganizationDefaultVolumeBackendEnum = typeof OrganizationDefaultVolumeBackendEnum[keyof typeof OrganizationDefaultVolumeBackendEnum];
+
 

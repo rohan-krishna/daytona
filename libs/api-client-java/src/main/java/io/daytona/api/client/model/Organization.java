@@ -137,10 +137,64 @@ public class Organization {
   @javax.annotation.Nullable
   private String defaultRegionId;
 
+  /**
+   * Default volume backend for sandbox volumes
+   */
+  @JsonAdapter(DefaultVolumeBackendEnum.Adapter.class)
+  public enum DefaultVolumeBackendEnum {
+    S3FUSE_LEGACY("s3fuse-legacy"),
+    
+    S3FUSE("s3fuse"),
+    
+    EXPERIMENTAL("experimental");
+
+    private String value;
+
+    DefaultVolumeBackendEnum(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
+    public static DefaultVolumeBackendEnum fromValue(String value) {
+      for (DefaultVolumeBackendEnum b : DefaultVolumeBackendEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+
+    public static class Adapter extends TypeAdapter<DefaultVolumeBackendEnum> {
+      @Override
+      public void write(final JsonWriter jsonWriter, final DefaultVolumeBackendEnum enumeration) throws IOException {
+        jsonWriter.value(enumeration.getValue());
+      }
+
+      @Override
+      public DefaultVolumeBackendEnum read(final JsonReader jsonReader) throws IOException {
+        String value =  jsonReader.nextString();
+        return DefaultVolumeBackendEnum.fromValue(value);
+      }
+    }
+
+    public static void validateJsonElement(JsonElement jsonElement) throws IOException {
+      String value = jsonElement.getAsString();
+      DefaultVolumeBackendEnum.fromValue(value);
+    }
+  }
+
   public static final String SERIALIZED_NAME_DEFAULT_VOLUME_BACKEND = "defaultVolumeBackend";
   @SerializedName(SERIALIZED_NAME_DEFAULT_VOLUME_BACKEND)
   @javax.annotation.Nonnull
-  private String defaultVolumeBackend;
+  private DefaultVolumeBackendEnum defaultVolumeBackend;
 
   public static final String SERIALIZED_NAME_AUTHENTICATED_RATE_LIMIT = "authenticatedRateLimit";
   @SerializedName(SERIALIZED_NAME_AUTHENTICATED_RATE_LIMIT)
@@ -503,7 +557,7 @@ public class Organization {
   }
 
 
-  public Organization defaultVolumeBackend(@javax.annotation.Nonnull String defaultVolumeBackend) {
+  public Organization defaultVolumeBackend(@javax.annotation.Nonnull DefaultVolumeBackendEnum defaultVolumeBackend) {
     this.defaultVolumeBackend = defaultVolumeBackend;
     return this;
   }
@@ -513,11 +567,11 @@ public class Organization {
    * @return defaultVolumeBackend
    */
   @javax.annotation.Nonnull
-  public String getDefaultVolumeBackend() {
+  public DefaultVolumeBackendEnum getDefaultVolumeBackend() {
     return defaultVolumeBackend;
   }
 
-  public void setDefaultVolumeBackend(@javax.annotation.Nonnull String defaultVolumeBackend) {
+  public void setDefaultVolumeBackend(@javax.annotation.Nonnull DefaultVolumeBackendEnum defaultVolumeBackend) {
     this.defaultVolumeBackend = defaultVolumeBackend;
   }
 
@@ -886,6 +940,8 @@ public class Organization {
       if (!jsonObj.get("defaultVolumeBackend").isJsonPrimitive()) {
         throw new IllegalArgumentException(String.format("Expected the field `defaultVolumeBackend` to be a primitive type in the JSON string but got `%s`", jsonObj.get("defaultVolumeBackend").toString()));
       }
+      // validate the required field `defaultVolumeBackend`
+      DefaultVolumeBackendEnum.validateJsonElement(jsonObj.get("defaultVolumeBackend"));
   }
 
   public static class CustomTypeAdapterFactory implements TypeAdapterFactory {

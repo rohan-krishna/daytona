@@ -21,7 +21,7 @@ var _ MappedNullable = &UpdateOrganizationDefaultVolumeBackend{}
 
 // UpdateOrganizationDefaultVolumeBackend struct for UpdateOrganizationDefaultVolumeBackend
 type UpdateOrganizationDefaultVolumeBackend struct {
-	// The default volume backend for the organization
+	// The default volume backend for the organization. `s3fuse-legacy` mounts on the runner host using the runner’s AWS credentials (legacy behavior). `s3fuse` and `experimental` mount inside the sandbox using short-lived, bucket-scoped STS credentials.
 	DefaultVolumeBackend string `json:"defaultVolumeBackend"`
 	AdditionalProperties map[string]interface{}
 }

@@ -51,10 +51,12 @@ import io.daytona.api.client.JSON;
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class UpdateOrganizationDefaultVolumeBackend {
   /**
-   * The default volume backend for the organization
+   * The default volume backend for the organization. &#x60;s3fuse-legacy&#x60; mounts on the runner host using the runner’s AWS credentials (legacy behavior). &#x60;s3fuse&#x60; and &#x60;experimental&#x60; mount inside the sandbox using short-lived, bucket-scoped STS credentials.
    */
   @JsonAdapter(DefaultVolumeBackendEnum.Adapter.class)
   public enum DefaultVolumeBackendEnum {
+    S3FUSE_LEGACY("s3fuse-legacy"),
+    
     S3FUSE("s3fuse"),
     
     EXPERIMENTAL("experimental");
@@ -116,7 +118,7 @@ public class UpdateOrganizationDefaultVolumeBackend {
   }
 
   /**
-   * The default volume backend for the organization
+   * The default volume backend for the organization. &#x60;s3fuse-legacy&#x60; mounts on the runner host using the runner’s AWS credentials (legacy behavior). &#x60;s3fuse&#x60; and &#x60;experimental&#x60; mount inside the sandbox using short-lived, bucket-scoped STS credentials.
    * @return defaultVolumeBackend
    */
   @javax.annotation.Nonnull

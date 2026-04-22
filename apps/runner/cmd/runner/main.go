@@ -154,15 +154,16 @@ func run() int {
 		AWSSecretAccessKey: cfg.AWSSecretAccessKey,
 	}, logger))
 
-	// Experimental in-container mounter: registered only when the operator
-	// has both (a) provided a mount-s3 binary on the host to bind-mount into
+	// In-container mounter: registered only when the operator has both
+	// (a) provided a mount-s3 binary on the host to bind-mount into
 	// sandboxes and (b) configured an IAM role the runner can AssumeRole on
-	// to mint bucket-scoped, short-lived credentials. When either is missing
-	// the backend is disabled and organizations that select it silently fall
-	// back to the default backend.
-	experimentalVolumeMounter, err := maybeBuildExperimentalMounter(ctx, cfg, logger)
+	// to mint bucket-scoped, short-lived credentials. Serves both the
+	// "s3fuse" (new default) and "experimental" backends. When either
+	// input is missing those backends are disabled and organizations that
+	// select them silently fall back to "s3fuse-legacy" (host-side).
+	inContainerVolumeMounter, err := maybeBuildInContainerMounter(ctx, cfg, logger)
 	if err != nil {
-		logger.Error("Failed to initialize experimental volume backend", "error", err)
+		logger.Error("Failed to initialize in-container volume backend", "error", err)
 		return 2
 	}
 
@@ -171,7 +172,7 @@ func run() int {
 		BackupInfoCache:              backupInfoCache,
 		Logger:                       logger,
 		DefaultVolumeMounter:         defaultVolumeMounter,
-		ExperimentalVolumeMounter:    experimentalVolumeMounter,
+		InContainerVolumeMounter:     inContainerVolumeMounter,
 		DaemonPath:                   daemonPath,
 		ComputerUsePluginPath:        pluginPath,
 		NetRulesManager:              netRulesManager,
@@ -344,26 +345,27 @@ func run() int {
 	}
 }
 
-// maybeBuildExperimentalMounter constructs the in-container volume mounter
-// when the operator has configured the prerequisites, or returns (nil, nil)
-// to indicate the backend stays disabled (callers of resolveVolumeMounter
-// already silently fall back to the default backend in that case).
+// maybeBuildInContainerMounter constructs the in-container volume mounter
+// (shared by the "s3fuse" and "experimental" backends) when the operator has
+// configured the prerequisites, or returns (nil, nil) to indicate the backend
+// stays disabled (callers of resolveVolumeMounter already silently fall back
+// to "s3fuse-legacy" in that case).
 //
 // A non-nil error is returned only for configurations that look intentional
 // but can't be honored — e.g. MOUNT_S3_BINARY_PATH set but the binary isn't
 // usable — so the runner fails fast on operator misconfiguration.
-func maybeBuildExperimentalMounter(ctx context.Context, cfg *config.Config, logger *slog.Logger) (volume.Mounter, error) {
+func maybeBuildInContainerMounter(ctx context.Context, cfg *config.Config, logger *slog.Logger) (volume.Mounter, error) {
 	// Both inputs must be configured; if either is empty we treat the
-	// experimental backend as "not deployed" and exit cleanly.
+	// in-container backend as "not deployed" and exit cleanly.
 	if cfg.MountS3BinaryPath == "" && cfg.VolumeAssumeRoleARN == "" {
 		return nil, nil
 	}
 	if cfg.MountS3BinaryPath == "" {
-		logger.Warn("VOLUME_ASSUME_ROLE_ARN set but MOUNT_S3_BINARY_PATH is empty; experimental volume backend disabled")
+		logger.Warn("VOLUME_ASSUME_ROLE_ARN set but MOUNT_S3_BINARY_PATH is empty; in-container volume backend disabled")
 		return nil, nil
 	}
 	if cfg.VolumeAssumeRoleARN == "" {
-		logger.Warn("MOUNT_S3_BINARY_PATH set but VOLUME_ASSUME_ROLE_ARN is empty; experimental volume backend disabled")
+		logger.Warn("MOUNT_S3_BINARY_PATH set but VOLUME_ASSUME_ROLE_ARN is empty; in-container volume backend disabled")
 		return nil, nil
 	}
 
@@ -391,7 +393,7 @@ func maybeBuildExperimentalMounter(ctx context.Context, cfg *config.Config, logg
 	}, stsClient)
 
 	logger.Info(
-		"Experimental in-container volume backend enabled",
+		"In-container volume backend enabled (s3fuse, experimental)",
 		"mountS3Binary", cfg.MountS3BinaryPath,
 		"assumeRole", cfg.VolumeAssumeRoleARN,
 		"sessionDuration", cfg.VolumeAssumeRoleSessionDuration.String(),

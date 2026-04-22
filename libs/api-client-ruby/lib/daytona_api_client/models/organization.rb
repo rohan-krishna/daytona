@@ -90,6 +90,28 @@ module DaytonaApiClient
     # Sandbox lifecycle rate limit TTL in seconds
     attr_accessor :sandbox_lifecycle_rate_limit_ttl_seconds
 
+    class EnumAttributeValidator
+      attr_reader :datatype
+      attr_reader :allowable_values
+
+      def initialize(datatype, allowable_values)
+        @allowable_values = allowable_values.map do |value|
+          case datatype.to_s
+          when /Integer/i
+            value.to_i
+          when /Float/i
+            value.to_f
+          else
+            value
+          end
+        end
+      end
+
+      def valid?(value)
+        !value || allowable_values.include?(value)
+      end
+    end
+
     # Attribute mapping from ruby-style variable name to JSON key.
     def self.attribute_map
       {
@@ -440,6 +462,8 @@ module DaytonaApiClient
       return false if @snapshot_deactivation_timeout_minutes.nil?
       return false if @sandbox_limited_network_egress.nil?
       return false if @default_volume_backend.nil?
+      default_volume_backend_validator = EnumAttributeValidator.new('String', ["s3fuse-legacy", "s3fuse", "experimental"])
+      return false unless default_volume_backend_validator.valid?(@default_volume_backend)
       return false if @experimental_config.nil?
       true
     end
@@ -604,13 +628,13 @@ module DaytonaApiClient
       @sandbox_limited_network_egress = sandbox_limited_network_egress
     end
 
-    # Custom attribute writer method with validation
-    # @param [Object] default_volume_backend Value to be assigned
+    # Custom attribute writer method checking allowed values (enum).
+    # @param [Object] default_volume_backend Object to be assigned
     def default_volume_backend=(default_volume_backend)
-      if default_volume_backend.nil?
-        fail ArgumentError, 'default_volume_backend cannot be nil'
+      validator = EnumAttributeValidator.new('String', ["s3fuse-legacy", "s3fuse", "experimental"])
+      unless validator.valid?(default_volume_backend)
+        fail ArgumentError, "invalid value for \"default_volume_backend\", must be one of #{validator.allowable_values}."
       end
-
       @default_volume_backend = default_volume_backend
     end
 

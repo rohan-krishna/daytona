@@ -189,7 +189,7 @@ const OrganizationSettings: React.FC = () => {
                   <FieldDescription>Select the storage backend for sandbox volumes.</FieldDescription>
                 </FieldContent>
                 <Select
-                  value={(selectedOrganization as Record<string, any>).defaultVolumeBackend ?? 's3fuse'}
+                  value={(selectedOrganization as Record<string, any>).defaultVolumeBackend ?? 's3fuse-legacy'}
                   onValueChange={handleSetDefaultVolumeBackend}
                   disabled={setDefaultVolumeBackendMutation.isPending}
                 >
@@ -197,7 +197,8 @@ const OrganizationSettings: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="s3fuse">Standard</SelectItem>
+                    <SelectItem value="s3fuse-legacy">S3 FUSE (legacy, host-side)</SelectItem>
+                    <SelectItem value="s3fuse">S3 FUSE (in-container, scoped IAM)</SelectItem>
                     <SelectItem value="experimental">Experimental</SelectItem>
                   </SelectContent>
                 </Select>

@@ -25,7 +25,7 @@ type DockerClientConfig struct {
 	BackupInfoCache              *cache.BackupInfoCache
 	Logger                       *slog.Logger
 	DefaultVolumeMounter         volume.Mounter
-	ExperimentalVolumeMounter    volume.Mounter // optional; when nil, experimental backend is unavailable
+	InContainerVolumeMounter     volume.Mounter // optional; when nil, in-container backends (s3fuse, experimental) are unavailable
 	DaemonPath                   string
 	ComputerUsePluginPath        string
 	NetRulesManager              *netrules.NetRulesManager
@@ -119,7 +119,7 @@ func NewDockerClient(ctx context.Context, config DockerClientConfig) (*DockerCli
 		pullTracker:                  &common.Tracker[string]{},
 		logger:                       logger,
 		defaultVolumeMounter:         config.DefaultVolumeMounter,
-		experimentalVolumeMounter:    config.ExperimentalVolumeMounter,
+		inContainerVolumeMounter:     config.InContainerVolumeMounter,
 		volumeMutexes:                make(map[string]*sync.Mutex),
 		daemonPath:                   config.DaemonPath,
 		computerUsePluginPath:        config.ComputerUsePluginPath,
@@ -148,12 +148,36 @@ func (d *DockerClient) ApiClient() client.APIClient {
 
 const volumeBackendMetadataKey = "volumeBackend"
 
+// Volume backend identifiers exchanged with the control plane via sandbox metadata.
+const (
+	// volumeBackendS3FuseLegacy is the original behavior: the runner mounts the
+	// S3 bucket on the host using its own long-lived AWS credentials, and bind
+	// mounts the host mountpoint into the sandbox. This is the default when no
+	// specific backend is requested.
+	volumeBackendS3FuseLegacy = "s3fuse-legacy"
+
+	// volumeBackendS3Fuse is the new default path: the runner mints short-lived,
+	// bucket-scoped STS credentials and the sandbox daemon runs mount-s3 inside
+	// the container.
+	volumeBackendS3Fuse = "s3fuse"
+
+	// volumeBackendExperimental shares the in-container implementation with
+	// volumeBackendS3Fuse today, but is reserved as a slot for future
+	// experimentation without affecting the documented "s3fuse" behavior.
+	volumeBackendExperimental = "experimental"
+)
+
 // resolveVolumeMounter selects the volume mounter based on the per-sandbox
-// metadata key. If the org requests "experimental" and the runner has an
-// experimental mounter configured, use it; otherwise fall back to the default.
+// metadata key. Backends that mount from inside the container ("s3fuse",
+// "experimental") route to the in-container mounter when available; everything
+// else ("s3fuse-legacy", unknown values, or in-container unavailable) falls
+// back to the host-side default mounter.
 func (d *DockerClient) resolveVolumeMounter(metadata map[string]string) volume.Mounter {
-	if metadata[volumeBackendMetadataKey] == "experimental" && d.experimentalVolumeMounter != nil {
-		return d.experimentalVolumeMounter
+	switch metadata[volumeBackendMetadataKey] {
+	case volumeBackendS3Fuse, volumeBackendExperimental:
+		if d.inContainerVolumeMounter != nil {
+			return d.inContainerVolumeMounter
+		}
 	}
 	return d.defaultVolumeMounter
 }
@@ -166,7 +190,7 @@ type DockerClient struct {
 	pullTracker                  *common.Tracker[string]
 	logger                       *slog.Logger
 	defaultVolumeMounter         volume.Mounter
-	experimentalVolumeMounter    volume.Mounter // nil when no experimental backend is configured
+	inContainerVolumeMounter     volume.Mounter // nil when no in-container backend is configured
 	volumeMutexes                map[string]*sync.Mutex
 	volumeMutexesMutex           sync.Mutex
 	daemonPath                   string

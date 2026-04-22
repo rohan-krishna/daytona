@@ -28,7 +28,8 @@ import (
 )
 
 // MountS3BinaryContainerPath is the well-known path the runner bind-mounts
-// the mount-s3 binary to inside every experimental-backend sandbox.
+// the mount-s3 binary to inside every sandbox using an in-container volume
+// backend ("s3fuse" or "experimental").
 const MountS3BinaryContainerPath = "/usr/local/bin/daytona-mount-s3"
 
 // Env var names exchanged between the runner and the in-container daemon.
@@ -112,8 +113,8 @@ func (m *Mounter) Unmount(_ context.Context, _ string) error         { return ni
 func (m *Mounter) IsMounted(_ string) bool                           { return false }
 func (m *Mounter) WaitUntilReady(_ context.Context, _ string) error  { return nil }
 
-// ContainerBinds returns the RO binds every experimental sandbox needs
-// regardless of volume count (just the mount-s3 binary).
+// ContainerBinds returns the RO binds every in-container-backend sandbox
+// needs regardless of volume count (just the mount-s3 binary).
 func (m *Mounter) ContainerBinds() []string {
 	if m.cfg.MountS3BinaryHostPath == "" {
 		return nil
