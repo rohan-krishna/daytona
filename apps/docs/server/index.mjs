@@ -1,8 +1,14 @@
+import { createRequire } from 'module'
+
 import express from 'express'
 
 import { handler as ssrHandler } from '../server/entry.mjs'
 import { env } from './util/environment.mjs'
 import { redirects as slugRedirects } from './util/redirects.mjs'
+
+const require = createRequire(import.meta.url)
+const gtConfig = require('../gt.config.json')
+const knownLocales = new Set(gtConfig.locales)
 
 // Full-path redirect map from the shared URL map (slug redirects)
 const redirects = Object.fromEntries(
@@ -32,6 +38,13 @@ app.use((req, res, next) => {
   next()
 })
 app.use('/docs', express.static('client/'))
+app.use((req, res, next) => {
+  const match = req.path.match(/^\/docs\/([a-zA-Z][^/.]*)(\/.*)?$/)
+  if (match && !knownLocales.has(match[1])) {
+    req.url = `/docs/en/${match[1]}${match[2] || '/'}`
+  }
+  next()
+})
 app.use(ssrHandler)
 app.use((req, res) => {
   res.sendFile('404.html', { root: 'client/' })
