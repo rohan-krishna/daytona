@@ -72,12 +72,58 @@ type Sandbox struct {
 	ComputerUse     *ComputerUseService     // Desktop automation
 }
 
-// PaginatedSandboxes represents a paginated list of sandboxes.
-type PaginatedSandboxes struct {
+// ListSandboxesQuery contains query parameters for filtering, sorting, and pagination when listing sandboxes.
+type ListSandboxesQuery struct {
+	// Pagination cursor from a previous response
+	Cursor *string
+	// Number of sandboxes per page
+	Limit *int
+	// Filter by ID prefix (case-insensitive)
+	ID *string
+	// Filter by name prefix (case-insensitive)
+	Name *string
+	// Filter by labels
+	Labels map[string]string
+	// Filter by states
+	States []string
+	// Filter by snapshot names
+	Snapshots []string
+	// Filter by targets
+	Targets []string
+	// Filter by minimum CPU
+	MinCpu *int
+	// Filter by maximum CPU
+	MaxCpu *int
+	// Filter by minimum memory in GiB
+	MinMemoryGiB *int
+	// Filter by maximum memory in GiB
+	MaxMemoryGiB *int
+	// Filter by minimum disk space in GiB
+	MinDiskGiB *int
+	// Filter by maximum disk space in GiB
+	MaxDiskGiB *int
+	// Filter by public status
+	IsPublic *bool
+	// Filter by recoverable status
+	IsRecoverable *bool
+	// Include sandboxes created after this timestamp
+	CreatedAtAfter *time.Time
+	// Include sandboxes created before this timestamp
+	CreatedAtBefore *time.Time
+	// Include sandboxes with last activity after this timestamp
+	LastActivityAfter *time.Time
+	// Include sandboxes with last activity before this timestamp
+	LastActivityBefore *time.Time
+	// Sort by field (name, cpu, memoryGiB, diskGiB, lastActivityAt, createdAt)
+	Sort *string
+	// Sort direction (asc, desc)
+	Order *string
+}
+
+// ListSandboxesResponse represents the response of listing sandboxes.
+type ListSandboxesResponse struct {
 	Items      []*Sandbox // Sandboxes in this page
-	Total      int        // Total number of sandboxes
-	Page       int        // Current page number
-	TotalPages int        // Total number of pages
+	NextCursor *string    // Cursor for the next page, nil if no more pages
 }
 
 // NewSandbox creates a new Sandbox instance.

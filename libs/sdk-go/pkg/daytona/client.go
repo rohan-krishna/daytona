@@ -670,58 +670,117 @@ func (c *Client) doGet(ctx context.Context, sandboxIDOrName string) (*Sandbox, e
 	return sandbox, nil
 }
 
-// List retrieves sandboxes with optional label filtering and pagination.
+// List returns a paginated list of Sandboxes matching the given query.
 //
 // Parameters:
-//   - labels: Optional map of labels to filter sandboxes. Pass nil for no filtering.
-//   - page: Optional page number (1-indexed). Pass nil for the first page.
-//   - limit: Optional number of results per page. Pass nil for the default limit.
+//   - query: Query parameters for filtering, sorting, and pagination.
 //
 // Example:
 //
-//	// List all sandboxes
-//	result, err := client.List(ctx, nil, nil, nil)
-//
-//	// List sandboxes with pagination
-//	page, limit := 1, 10
-//	result, err := client.List(ctx, nil, &page, &limit)
-//
-//	// Filter by labels
-//	result, err := client.List(ctx, map[string]string{"env": "dev"}, nil, nil)
-//
-//	// Iterate through results
-//	for _, sandbox := range result.Items {
-//	    fmt.Printf("Sandbox: %s (state: %s)\n", sandbox.Name, sandbox.State)
+//	var cursor *string
+//	limit := 10
+//	sort := "createdAt"
+//	order := "desc"
+//	for {
+//	    result, err := client.List(ctx, &ListSandboxesQuery{
+//	        Cursor: cursor,
+//	        Limit:  &limit,
+//	        Labels: map[string]string{"env": "dev"},
+//	        States: []string{"started"},
+//	        Sort:   &sort,
+//	        Order:  &order,
+//	    })
+//	    if err != nil {
+//	        log.Fatal(err)
+//	    }
+//	    for _, sandbox := range result.Items {
+//	        fmt.Println(sandbox.ID)
+//	    }
+//	    cursor = result.NextCursor
+//	    if cursor == nil {
+//	        break
+//	    }
 //	}
 //
-// Returns a [PaginatedSandboxes] containing the matching sandboxes and pagination metadata.
-func (c *Client) List(ctx context.Context, labels map[string]string, page *int, limit *int) (*PaginatedSandboxes, error) {
-	return withInstrumentation(ctx, c.Otel, "Client", "List", func(ctx context.Context) (*PaginatedSandboxes, error) {
-		return c.doList(ctx, labels, page, limit)
+// Returns a [ListSandboxesResponse] with a paginated list of Sandboxes and cursor for the next page.
+func (c *Client) List(ctx context.Context, query *ListSandboxesQuery) (*ListSandboxesResponse, error) {
+	return withInstrumentation(ctx, c.Otel, "Client", "List", func(ctx context.Context) (*ListSandboxesResponse, error) {
+		return c.doList(ctx, query)
 	})
 }
 
-func (c *Client) doList(ctx context.Context, labels map[string]string, page *int, limit *int) (*PaginatedSandboxes, error) {
-	if page != nil && *page < 1 {
-		return nil, errors.NewDaytonaError("page must be a positive integer", 0, nil)
-	}
-	if limit != nil && *limit < 1 {
-		return nil, errors.NewDaytonaError("limit must be a positive integer", 0, nil)
-	}
-
+func (c *Client) doList(ctx context.Context, query *ListSandboxesQuery) (*ListSandboxesResponse, error) {
 	authCtx := c.getAuthContext(ctx)
-	request := c.apiClient.SandboxAPI.ListSandboxesPaginatedDeprecated(authCtx)
+	request := c.apiClient.SandboxAPI.ListSandboxes(authCtx)
 
-	// Add optional parameters
-	if labels != nil {
-		labelsJSON, _ := json.Marshal(labels)
-		request = request.Labels(string(labelsJSON))
-	}
-	if page != nil {
-		request = request.Page(float32(*page))
-	}
-	if limit != nil {
-		request = request.Limit(float32(*limit))
+	if query != nil {
+		if query.Cursor != nil {
+			request = request.Cursor(*query.Cursor)
+		}
+		if query.Limit != nil {
+			request = request.Limit(float32(*query.Limit))
+		}
+		if query.ID != nil {
+			request = request.Id(*query.ID)
+		}
+		if query.Name != nil {
+			request = request.Name(*query.Name)
+		}
+		if query.Labels != nil {
+			labelsJSON, _ := json.Marshal(query.Labels)
+			request = request.Labels(string(labelsJSON))
+		}
+		if query.States != nil {
+			request = request.States(query.States)
+		}
+		if query.Snapshots != nil {
+			request = request.Snapshots(query.Snapshots)
+		}
+		if query.Targets != nil {
+			request = request.RegionIds(query.Targets)
+		}
+		if query.MinCpu != nil {
+			request = request.MinCpu(float32(*query.MinCpu))
+		}
+		if query.MaxCpu != nil {
+			request = request.MaxCpu(float32(*query.MaxCpu))
+		}
+		if query.MinMemoryGiB != nil {
+			request = request.MinMemoryGiB(float32(*query.MinMemoryGiB))
+		}
+		if query.MaxMemoryGiB != nil {
+			request = request.MaxMemoryGiB(float32(*query.MaxMemoryGiB))
+		}
+		if query.MinDiskGiB != nil {
+			request = request.MinDiskGiB(float32(*query.MinDiskGiB))
+		}
+		if query.MaxDiskGiB != nil {
+			request = request.MaxDiskGiB(float32(*query.MaxDiskGiB))
+		}
+		if query.IsPublic != nil {
+			request = request.IsPublic(*query.IsPublic)
+		}
+		if query.IsRecoverable != nil {
+			request = request.IsRecoverable(*query.IsRecoverable)
+		}
+		if query.CreatedAtAfter != nil {
+			request = request.CreatedAtAfter(*query.CreatedAtAfter)
+		}
+		if query.CreatedAtBefore != nil {
+			request = request.CreatedAtBefore(*query.CreatedAtBefore)
+		}
+		if query.LastActivityAfter != nil {
+			request = request.LastEventAfter(*query.LastActivityAfter)
+		}
+		if query.LastActivityBefore != nil {
+			request = request.LastEventBefore(*query.LastActivityBefore)
+		}
+		if query.Sort != nil {
+			request = request.Sort(*query.Sort)
+		}
+		if query.Order != nil {
+			request = request.Order(*query.Order)
+		}
 	}
 
 	result, httpResp, err := request.Execute()
@@ -762,11 +821,14 @@ func (c *Client) doList(ctx context.Context, labels map[string]string, page *int
 		)
 	}
 
-	return &PaginatedSandboxes{
+	var nextCursor *string
+	if result.NextCursor.IsSet() && result.NextCursor.Get() != nil {
+		nextCursor = result.NextCursor.Get()
+	}
+
+	return &ListSandboxesResponse{
 		Items:      sandboxes,
-		Total:      int(result.GetTotal()),
-		Page:       int(result.GetPage()),
-		TotalPages: int(result.GetTotalPages()),
+		NextCursor: nextCursor,
 	}, nil
 }
 

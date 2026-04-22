@@ -644,10 +644,10 @@ sandbox.refresh_activity()
 ```
 
 
-## PaginatedSandboxes
+## ListSandboxesResponse
 
 ```python
-class PaginatedSandboxes(PaginatedSandboxesDto)
+class ListSandboxesResponse(ListSandboxesResponseDto)
 ```
 
 Represents a paginated list of Daytona Sandboxes.
@@ -655,9 +655,7 @@ Represents a paginated list of Daytona Sandboxes.
 **Attributes**:
 
 - `items` _list[Sandbox]_ - List of Sandbox instances in the current page.
-- `total` _int_ - Total number of Sandboxes across all pages.
-- `page` _int_ - Current page number.
-- `total_pages` _int_ - Total number of pages available.
+- `next_cursor` _str | None_ - Cursor for the next page of results, None if no more pages.
 
 ##### items: `list[Sandbox]`
 

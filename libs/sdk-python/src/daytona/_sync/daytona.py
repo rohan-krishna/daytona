@@ -34,6 +34,7 @@ from daytona_api_client import (
 from daytona_api_client import VolumesApi as VolumesApi
 from daytona_toolbox_api_client import ApiClient as ToolboxApiClient
 
+from .._async.sandbox import ListSandboxesQuery
 from .._utils.enum import to_enum
 from .._utils.env import DaytonaEnvReader
 from .._utils.errors import intercept_errors
@@ -50,7 +51,7 @@ from ..common.daytona import (
 from ..common.errors import DaytonaAuthenticationError, DaytonaValidationError
 from ..common.image import Image
 from ..internal.urllib3_retry import RemoteDisconnectedRetry
-from .sandbox import PaginatedSandboxes, Sandbox
+from .sandbox import ListSandboxesResponse, Sandbox
 from .snapshot import SnapshotService
 from .volume import VolumeService
 
@@ -541,33 +542,63 @@ class Daytona:
     @intercept_errors(message_prefix="Failed to list sandboxes: ")
     @with_instrumentation()
     def list(
-        self, labels: dict[str, str] | None = None, page: int | None = None, limit: int | None = None
-    ) -> PaginatedSandboxes:
-        """Returns paginated list of Sandboxes filtered by labels.
+        self,
+        query: ListSandboxesQuery | None = None,
+    ) -> ListSandboxesResponse:
+        """Returns a paginated list of Sandboxes matching the given query.
 
         Args:
-            labels (dict[str, str] | None): Labels to filter Sandboxes.
-            page (int | None): Page number for pagination (starting from 1).
-            limit (int | None): Maximum number of items per page.
+            query: Query parameters for filtering, sorting, and pagination.
 
         Returns:
-            PaginatedSandboxes: Paginated list of Sandbox instances that match the labels.
+            ListSandboxesResponse: Paginated list of Sandboxes with cursor for the next page.
 
         Example:
             ```python
-            result = daytona.list(labels={"my-label": "my-value"}, page=2, limit=10)
-            for sandbox in result.items:
-                print(f"{sandbox.id}: {sandbox.state}")
+            from daytona import ListSandboxesQuery
+
+            cursor = None
+            while True:
+                result = daytona.list(ListSandboxesQuery(
+                    cursor=cursor,
+                    limit=10,
+                    labels={"env": "dev"},
+                    states=["started"],
+                    sort="createdAt",
+                    order="desc",
+                ))
+                for sandbox in result.items:
+                    print(sandbox.id)
+                cursor = result.next_cursor
+                if not cursor:
+                    break
             ```
         """
-        if page is not None and page < 1:
-            raise DaytonaValidationError("page must be a positive integer")
+        q = query or ListSandboxesQuery()
 
-        if limit is not None and limit < 1:
-            raise DaytonaValidationError("limit must be a positive integer")
-
-        response = self._sandbox_api.list_sandboxes_paginated_deprecated(
-            labels=json.dumps(labels), page=page, limit=limit
+        response = self._sandbox_api.list_sandboxes(
+            labels=json.dumps(q.labels) if q.labels else None,
+            cursor=q.cursor,
+            limit=q.limit,
+            id=q.id,
+            name=q.name,
+            states=q.states,
+            snapshots=q.snapshots,
+            region_ids=q.targets,
+            min_cpu=q.min_cpu,
+            max_cpu=q.max_cpu,
+            min_memory_gi_b=q.min_memory_gi_b,
+            max_memory_gi_b=q.max_memory_gi_b,
+            min_disk_gi_b=q.min_disk_gi_b,
+            max_disk_gi_b=q.max_disk_gi_b,
+            is_public=q.is_public,
+            is_recoverable=q.is_recoverable,
+            created_at_after=q.created_at_after,
+            created_at_before=q.created_at_before,
+            last_event_after=q.last_activity_after,
+            last_event_before=q.last_activity_before,
+            sort=q.sort,
+            order=q.order,
         )
 
         items: list[Sandbox] = []
@@ -582,11 +613,9 @@ class Daytona:
                 )
             )
 
-        return PaginatedSandboxes(
+        return ListSandboxesResponse(
             items=items,
-            total=response.total,
-            page=response.page,
-            total_pages=response.total_pages,
+            next_cursor=response.next_cursor,
         )
 
     def _validate_language_label(self, language: str | None = None) -> CodeLanguage:

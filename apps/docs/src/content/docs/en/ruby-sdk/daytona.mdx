@@ -174,25 +174,43 @@ Gets a Sandbox by its ID.
 #### list()
 
 ```ruby
-def list(labels, page:, limit:)
+def list(query)
 
 ```
 
-Lists Sandboxes filtered by labels.
+Returns a paginated list of Sandboxes matching the given query.
 
 **Parameters**:
 
-- `labels` _Hash\<String, String\>_ -
-- `page` _Integer, Nil_ -
-- `limit` _Integer, Nil_ -
+- `query` _Daytona:ListSandboxesQuery, nil_ - Query parameters for filtering, sorting, and pagination
 
 **Returns**:
 
-- `Daytona:PaginatedResource`
+- `Daytona:ListSandboxesResponse` - Paginated list of Sandboxes with cursor for the next page
 
 **Raises**:
 
 - `Daytona:Sdk:Error` -
+
+**Examples:**
+
+```ruby
+cursor = nil
+loop do
+  result = daytona.list(Daytona::ListSandboxesQuery.new(
+    cursor: cursor,
+    limit: 10,
+    labels: { 'env' => 'dev' },
+    states: ['started'],
+    sort: 'createdAt',
+    order: 'desc'
+  ))
+  result.items.each { |sandbox| puts sandbox.id }
+  cursor = result.next_cursor
+  break unless cursor
+end
+
+```
 
 #### start()
 

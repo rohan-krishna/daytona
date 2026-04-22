@@ -282,32 +282,38 @@ console.log(`Sandbox state: ${sandbox.state}`);
 #### list()
 
 ```ts
-list(
-   labels?: Record<string, string>, 
-   page?: number, 
-limit?: number): Promise<PaginatedSandboxes>
+list(query?: ListSandboxesQuery): Promise<ListSandboxesResponse>
 ```
 
-Returns paginated list of Sandboxes filtered by labels.
+Returns a paginated list of Sandboxes matching the given query.
 
 **Parameters**:
 
-- `labels?` _Record\<string, string\>_ - Labels to filter Sandboxes
-- `page?` _number_ - Page number for pagination (starting from 1)
-- `limit?` _number_ - Maximum number of items per page
+- `query?` _ListSandboxesQuery_ - Query parameters for filtering, sorting, and pagination
 
 
 **Returns**:
 
-- `Promise<PaginatedSandboxes>` - Paginated list of Sandboxes that match the labels.
+- `Promise<ListSandboxesResponse>` - Paginated list of Sandboxes with cursor for the next page.
 
 **Example:**
 
 ```ts
-const result = await daytona.list({ 'my-label': 'my-value' }, 2, 10);
-for (const sandbox of result.items) {
-    console.log(`${sandbox.id}: ${sandbox.state}`);
-}
+let cursor: string | undefined;
+do {
+  const result = await daytona.list({
+    cursor,
+    limit: 10,
+    labels: { env: 'dev' },
+    states: ['started'],
+    sort: 'createdAt',
+    order: 'desc',
+  });
+  for (const sandbox of result.items) {
+    console.log(sandbox.id);
+  }
+  cursor = result.nextCursor;
+} while (cursor);
 ```
 
 ***

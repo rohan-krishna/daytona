@@ -9,7 +9,7 @@ from deprecated import deprecated
 from pydantic import ConfigDict, PrivateAttr
 
 from daytona_api_client import BuildInfo, CreateSandboxSnapshot, ForkSandbox
-from daytona_api_client import PaginatedSandboxesDeprecated as PaginatedSandboxesDto
+from daytona_api_client import ListSandboxesResponse as ListSandboxesResponseDto
 from daytona_api_client import PortPreviewUrl, ResizeSandbox
 from daytona_api_client import Sandbox as SandboxDto
 from daytona_api_client import (
@@ -810,14 +810,12 @@ class Sandbox(SandboxDto):
             self.state = SandboxState.DESTROYED
 
 
-class PaginatedSandboxes(PaginatedSandboxesDto):
+class ListSandboxesResponse(ListSandboxesResponseDto):
     """Represents a paginated list of Daytona Sandboxes.
 
     Attributes:
         items (list[Sandbox]): List of Sandbox instances in the current page.
-        total (int): Total number of Sandboxes across all pages.
-        page (int): Current page number.
-        total_pages (int): Total number of pages available.
+        next_cursor (str | None): Cursor for the next page of results, None if no more pages.
     """
 
     items: list[Sandbox]  # pyright: ignore[reportIncompatibleVariableOverride]

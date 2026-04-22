@@ -55,16 +55,29 @@ func main() {
 	log.Printf("Working directory: %s\n", workDir)
 
 	log.Println("Listing all sandboxes...")
-	page := 1
+	var cursor *string
 	limit := 10
-	allSandboxes, err := client.List(ctx, nil, &page, &limit)
-	if err != nil {
-		log.Fatalf("Failed to list sandboxes: %v", err)
-	}
-
-	log.Printf("Total sandboxes: %d\n", allSandboxes.Total)
-	for _, sb := range allSandboxes.Items {
-		log.Printf("  - %s (State: %s)\n", sb.Name, sb.State)
+	sort := "createdAt"
+	order := "desc"
+	for {
+		sandboxList, err := client.List(ctx, &daytona.ListSandboxesQuery{
+			Cursor: cursor,
+			Limit:  &limit,
+			Labels: map[string]string{"env": "dev"},
+			States: []string{"started"},
+			Sort:   &sort,
+			Order:  &order,
+		})
+		if err != nil {
+			log.Fatalf("Failed to list sandboxes: %v", err)
+		}
+		for _, sb := range sandboxList.Items {
+			log.Println(sb.ID)
+		}
+		cursor = sandboxList.NextCursor
+		if cursor == nil {
+			break
+		}
 	}
 
 	// Delete the sandbox

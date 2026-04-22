@@ -325,31 +325,42 @@ print(sandbox.state)
 ```python
 @intercept_errors(message_prefix="Failed to list sandboxes: ")
 @with_instrumentation()
-async def list(labels: dict[str, str] | None = None,
-               page: int | None = None,
-               limit: int | None = None) -> AsyncPaginatedSandboxes
+async def list(
+        query: ListSandboxesQuery | None = None) -> AsyncListSandboxesResponse
 ```
 
-Returns paginated list of Sandboxes filtered by labels.
+Returns a paginated list of Sandboxes matching the given query.
 
 **Arguments**:
 
-- `labels` _dict[str, str] | None_ - Labels to filter Sandboxes.
-- `page` _int | None_ - Page number for pagination (starting from 1).
-- `limit` _int | None_ - Maximum number of items per page.
+- `query` - Query parameters for filtering, sorting, and pagination.
   
 
 **Returns**:
 
-- `AsyncPaginatedSandboxes` - Paginated list of Sandbox instances that match the labels.
+- `AsyncListSandboxesResponse` - Paginated list of Sandboxes with cursor for the next page.
   
 
 **Example**:
 
 ```python
-result = await daytona.list(labels={"my-label": "my-value"}, page=2, limit=10)
-for sandbox in result.items:
-    print(f"{sandbox.id}: {sandbox.state}")
+from daytona import ListSandboxesQuery
+
+cursor = None
+while True:
+    result = await daytona.list(ListSandboxesQuery(
+        cursor=cursor,
+        limit=10,
+        labels={"env": "dev"},
+        states=["started"],
+        sort="createdAt",
+        order="desc",
+    ))
+    for sandbox in result.items:
+        print(sandbox.id)
+    cursor = result.next_cursor
+    if not cursor:
+        break
 ```
 
 #### AsyncDaytona.start

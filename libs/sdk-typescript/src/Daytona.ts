@@ -12,6 +12,7 @@ import {
   VolumesApi,
   SandboxVolume,
   ConfigApi,
+  ListSandboxesStatesEnum,
 } from '@daytona/api-client'
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import {
@@ -22,7 +23,7 @@ import {
   DaytonaValidationError,
 } from './errors/DaytonaError'
 import { Image } from './Image'
-import { Sandbox, PaginatedSandboxes } from './Sandbox'
+import { Sandbox, ListSandboxesQuery, ListSandboxesResponse } from './Sandbox'
 import { SnapshotService } from './Snapshot'
 import { VolumeService } from './Volume'
 import * as packageJson from '../package.json'
@@ -626,37 +627,62 @@ export class Daytona implements AsyncDisposable {
   }
 
   /**
-   * Returns paginated list of Sandboxes filtered by labels.
+   * Returns a paginated list of Sandboxes matching the given query.
    *
-   * @param {Record<string, string>} [labels] - Labels to filter Sandboxes
-   * @param {number} [page] - Page number for pagination (starting from 1)
-   * @param {number} [limit] - Maximum number of items per page
-   * @returns {Promise<PaginatedSandboxes>} Paginated list of Sandboxes that match the labels.
+   * @param {ListSandboxesQuery} [query] - Query parameters for filtering, sorting, and pagination
+   * @returns {Promise<ListSandboxesResponse>} Paginated list of Sandboxes with cursor for the next page.
    *
    * @example
-   * const result = await daytona.list({ 'my-label': 'my-value' }, 2, 10);
-   * for (const sandbox of result.items) {
-   *     console.log(`${sandbox.id}: ${sandbox.state}`);
-   * }
+   * let cursor: string | undefined;
+   * do {
+   *   const result = await daytona.list({
+   *     cursor,
+   *     limit: 10,
+   *     labels: { env: 'dev' },
+   *     states: ['started'],
+   *     sort: 'createdAt',
+   *     order: 'desc',
+   *   });
+   *   for (const sandbox of result.items) {
+   *     console.log(sandbox.id);
+   *   }
+   *   cursor = result.nextCursor;
+   * } while (cursor);
    */
   @WithInstrumentation()
-  public async list(labels?: Record<string, string>, page?: number, limit?: number): Promise<PaginatedSandboxes> {
-    const response = await this.sandboxApi.listSandboxesPaginatedDeprecated(
+  public async list(query?: ListSandboxesQuery): Promise<ListSandboxesResponse> {
+    const response = await this.sandboxApi.listSandboxes(
       undefined,
-      page,
-      limit,
+      query?.cursor,
+      query?.limit,
+      query?.id,
+      query?.name,
+      query?.labels ? JSON.stringify(query.labels) : undefined,
       undefined,
-      undefined,
-      labels ? JSON.stringify(labels) : undefined,
+      query?.states as unknown as Array<ListSandboxesStatesEnum>,
+      query?.snapshots,
+      query?.targets,
+      query?.minCpu,
+      query?.maxCpu,
+      query?.minMemoryGiB,
+      query?.maxMemoryGiB,
+      query?.minDiskGiB,
+      query?.maxDiskGiB,
+      query?.isPublic,
+      query?.isRecoverable,
+      query?.createdAtAfter,
+      query?.createdAtBefore,
+      query?.lastActivityAfter,
+      query?.lastActivityBefore,
+      query?.sort,
+      query?.order,
     )
 
     return {
       items: response.data.items.map((sandbox) => {
         return new Sandbox(sandbox, structuredClone(this.clientConfig), Daytona.createAxiosInstance(), this.sandboxApi)
       }),
-      total: response.data.total,
-      page: response.data.page,
-      totalPages: response.data.totalPages,
+      nextCursor: response.data.nextCursor,
     }
   }
 
