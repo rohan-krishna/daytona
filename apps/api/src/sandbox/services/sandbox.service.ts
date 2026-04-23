@@ -1775,13 +1775,13 @@ export class SandboxService {
       recoverable: false,
     }
 
-    await this.sandboxRepository.updateWhere(sandbox.id, {
+    const updatedSandbox = await this.sandboxRepository.updateWhere(sandbox.id, {
       updateData,
       whereCondition: { state: SandboxState.ERROR },
     })
 
     if (skipStart) {
-      return await this.findOneByIdOrName(sandbox.id, organization.id)
+      return updatedSandbox
     }
 
     // Now that sandbox is in STOPPED state, use the normal start flow

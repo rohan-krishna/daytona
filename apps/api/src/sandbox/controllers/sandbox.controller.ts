@@ -463,6 +463,11 @@ export class SandboxController {
     targetType: AuditTarget.SANDBOX,
     targetIdFromRequest: (req) => req.params.sandboxIdOrName,
     targetIdFromResult: (result: SandboxDto) => result?.id,
+    requestMetadata: {
+      query: (req) => ({
+        skipStart: req.query?.skipStart === 'true',
+      }),
+    },
   })
   async recoverSandbox(
     @IsOrganizationAuthContext() authContext: OrganizationAuthContext,
