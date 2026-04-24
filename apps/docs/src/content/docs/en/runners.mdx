@@ -14,7 +14,7 @@ Customer Managed Compute enables you to use your own runner machines to run sand
 
 Runners in [shared](/docs/en/regions#shared-regions) and [dedicated](/docs/en/regions#dedicated-regions) regions are fully managed by Daytona — from provisioning and maintenance to monitoring and scaling. For custom regions, you bring your own runner machines and are responsible for their management and operation.
 
-Daytona provides two sets of runner management endpoints: [custom runners](#custom-regions) (`/runners`) and [admin operations](#admin-operations) (`/admin/runners`). While both support creating, listing, updating, and deleting runners, they serve different purposes and offer different levels of control.
+Daytona provides two sets of runner management endpoints: [custom runners](#custom-runners) (`/runners`) and [admin operations](#admin-operations) (`/admin/runners`). While both support creating, listing, updating, and deleting runners, they serve different purposes and offer different levels of control.
 
 Custom runner endpoints are scoped to your [organization](/docs/en/organizations) and support the `X-Daytona-Organization-ID` header. Admin endpoints operate across the entire platform and do not require an organization header.
 
