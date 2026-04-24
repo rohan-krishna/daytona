@@ -16,7 +16,7 @@ Runners in [shared](/docs/en/regions#shared-regions) and [dedicated](/docs/en/re
 
 Daytona provides two sets of runner management endpoints: [custom runners](#custom-regions) (`/runners`) and [admin operations](#admin-operations) (`/admin/runners`). While both support creating, listing, updating, and deleting runners, they serve different purposes and offer different levels of control.
 
-Custom runner endpoints are scoped to your [organization](/docs/en/organizations) and require the `X-Daytona-Organization-ID` header. Admin endpoints operate across the entire platform and do not require an organization header.
+Custom runner endpoints are scoped to your [organization](/docs/en/organizations) and support the `X-Daytona-Organization-ID` header. Admin endpoints operate across the entire platform and do not require an organization header.
 
 Both `Runner` and `RunnerFull` share the same base fields, including resource metrics, allocated resources, availability score, snapshot count, and started sandboxes. The `RunnerFull` type extends `Runner` with the runner's `apiKey` and `regionType` fields.
 
