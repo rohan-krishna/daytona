@@ -222,7 +222,9 @@ func (d *DockerClient) getMountCmd(ctx context.Context, volume string, path stri
 	}
 
 	// No systemd (containerized) — daemon orphan survives runner restarts naturally.
-	cmd := exec.Command("mount-s3", args...)
+	// CommandContext is used so ctx cancellation can stop a slow mount-s3 startup;
+	// once mount-s3 daemonizes (no --foreground), cmd.Run returns and ctx no longer has a leash.
+	cmd := exec.CommandContext(ctx, "mount-s3", args...)
 	cmd.Env = envVars
 
 	_, err := os.Stat("/run/systemd/system")
