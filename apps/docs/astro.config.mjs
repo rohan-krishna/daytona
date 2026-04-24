@@ -19,9 +19,21 @@ const jsonLightString = fs.readFileSync(
 const myThemeDark = ExpressiveCodeTheme.fromJSONString(jsonDarkString)
 const myThemeLight = ExpressiveCodeTheme.fromJSONString(jsonLightString)
 
+function hostFromUrl(value) {
+  if (!value) return null
+  try {
+    return new URL(value).hostname
+  } catch {
+    return null
+  }
+}
+
+const siteUrl = process.env.PUBLIC_WEB_URL || 'https://www.daytona.io'
+const siteHost = hostFromUrl(siteUrl)
+
 // https://astro.build/config
 export default defineConfig({
-  site: process.env.PUBLIC_WEB_URL,
+  site: siteUrl,
   base: '/docs',
   integrations: [
     react(),
@@ -72,6 +84,7 @@ export default defineConfig({
       { hostname: 'daytona.io' },
       { hostname: 'www.daytona.io' },
       { hostname: 'localhost' },
+      ...(siteHost ? [{ hostname: siteHost }] : []),
     ],
   },
   output: 'server',

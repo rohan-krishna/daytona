@@ -18,17 +18,20 @@ COPY apps/docs/ apps/docs/
 COPY apps/api/ apps/api/
 COPY apps/daemon/pkg/toolbox/docs/swagger.json apps/daemon/pkg/toolbox/docs/swagger.json
 
+# Prevent local defaults from overriding CI-provided build variables.
+RUN rm -f apps/docs/.env
+
 # Lib dependencies (api imports runner-api-client)
 COPY libs/runner-api-client/ libs/runner-api-client/
 COPY libs/runner-proto/ libs/runner-proto/
 
 # Docs build arguments
-ENV PUBLIC_WEB_URL=https://daytona.io
 ARG PUBLIC_ALGOLIA_APP_ID
 ENV PUBLIC_ALGOLIA_APP_ID=${PUBLIC_ALGOLIA_APP_ID}
 ARG PUBLIC_ALGOLIA_API_KEY
 ENV PUBLIC_ALGOLIA_API_KEY=${PUBLIC_ALGOLIA_API_KEY}
 ARG PUBLIC_WEB_URL
+RUN test -n "${PUBLIC_WEB_URL}" || (echo "PUBLIC_WEB_URL build arg is required" && exit 1)
 ENV PUBLIC_WEB_URL=${PUBLIC_WEB_URL}
 ARG PUBLIC_ALGOLIA_DOCS_INDEX_NAME=docs
 ENV PUBLIC_ALGOLIA_DOCS_INDEX_NAME=${PUBLIC_ALGOLIA_DOCS_INDEX_NAME}
