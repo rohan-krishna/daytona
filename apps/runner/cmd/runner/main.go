@@ -12,8 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	awsconfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/daytonaio/common-go/pkg/log"
 	"github.com/daytonaio/common-go/pkg/telemetry"
 	"github.com/daytonaio/runner/cmd/runner/config"
@@ -154,16 +152,16 @@ func run() int {
 		AWSSecretAccessKey: cfg.AWSSecretAccessKey,
 	}, logger))
 
-	// In-container mounter: registered only when the operator has both
-	// (a) provided a mount-s3 binary on the host to bind-mount into
-	// sandboxes and (b) configured an IAM role the runner can AssumeRole on
-	// to mint bucket-scoped, short-lived credentials. Serves both the
-	// "s3fuse" (new default) and "experimental" backends. When either
-	// input is missing those backends are disabled and organizations that
-	// select them silently fall back to "s3fuse-legacy" (host-side).
+	// Experimental in-container mounter: registered only when the operator
+	// has installed the `archil` CLI binary on the host and pointed
+	// ARCHIL_BINARY_PATH at it. When unset, the "experimental" backend is
+	// disabled and organizations that select it silently fall back to
+	// "s3fuse" (host-side). Per-disk mount tokens are supplied by the
+	// control plane on each volume; the runner does not need an Archil
+	// API key.
 	inContainerVolumeMounter, err := maybeBuildInContainerMounter(ctx, cfg, logger)
 	if err != nil {
-		logger.Error("Failed to initialize in-container volume backend", "error", err)
+		logger.Error("Failed to initialize experimental in-container volume backend", "error", err)
 		return 2
 	}
 
@@ -345,58 +343,28 @@ func run() int {
 	}
 }
 
-// maybeBuildInContainerMounter constructs the in-container volume mounter
-// (shared by the "s3fuse" and "experimental" backends) when the operator has
-// configured the prerequisites, or returns (nil, nil) to indicate the backend
-// stays disabled (callers of resolveVolumeMounter already silently fall back
-// to "s3fuse-legacy" in that case).
+// maybeBuildInContainerMounter constructs the experimental in-container
+// (Archil) volume mounter when the operator has provided ARCHIL_BINARY_PATH,
+// or returns (nil, nil) to indicate the backend stays disabled. When disabled,
+// resolveVolumeMounter silently falls "experimental" sandboxes back to s3fuse.
 //
-// A non-nil error is returned only for configurations that look intentional
-// but can't be honored — e.g. MOUNT_S3_BINARY_PATH set but the binary isn't
-// usable — so the runner fails fast on operator misconfiguration.
-func maybeBuildInContainerMounter(ctx context.Context, cfg *config.Config, logger *slog.Logger) (volume.Mounter, error) {
-	// Both inputs must be configured; if either is empty we treat the
-	// in-container backend as "not deployed" and exit cleanly.
-	if cfg.MountS3BinaryPath == "" && cfg.VolumeAssumeRoleARN == "" {
+// A non-nil error is returned only when ARCHIL_BINARY_PATH is set but invalid,
+// so the runner fails fast on operator misconfiguration.
+func maybeBuildInContainerMounter(_ context.Context, cfg *config.Config, logger *slog.Logger) (volume.Mounter, error) {
+	if cfg.ArchilBinaryPath == "" {
 		return nil, nil
 	}
-	if cfg.MountS3BinaryPath == "" {
-		logger.Warn("VOLUME_ASSUME_ROLE_ARN set but MOUNT_S3_BINARY_PATH is empty; in-container volume backend disabled")
-		return nil, nil
+	if _, err := os.Stat(cfg.ArchilBinaryPath); err != nil {
+		return nil, fmt.Errorf("ARCHIL_BINARY_PATH not accessible: %w", err)
 	}
-	if cfg.VolumeAssumeRoleARN == "" {
-		logger.Warn("MOUNT_S3_BINARY_PATH set but VOLUME_ASSUME_ROLE_ARN is empty; in-container volume backend disabled")
-		return nil, nil
-	}
-
-	if _, err := os.Stat(cfg.MountS3BinaryPath); err != nil {
-		return nil, fmt.Errorf("MOUNT_S3_BINARY_PATH not accessible: %w", err)
-	}
-
-	// Load the runner's own AWS credentials via the default chain. This
-	// picks up env vars, EC2 instance role, ECS task role, etc. The runner's
-	// base identity only needs sts:AssumeRole on VolumeAssumeRoleARN — it
-	// never needs direct S3 permissions for this backend.
-	awsCfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(cfg.AWSRegion))
-	if err != nil {
-		return nil, fmt.Errorf("load AWS config: %w", err)
-	}
-
-	stsClient := sts.NewFromConfig(awsCfg)
 
 	mounter := incontainer.NewMounter(incontainer.Config{
-		AWSRegion:             cfg.AWSRegion,
-		AWSEndpointURL:        cfg.AWSEndpointUrl,
-		AssumeRoleARN:         cfg.VolumeAssumeRoleARN,
-		SessionDuration:       cfg.VolumeAssumeRoleSessionDuration,
-		MountS3BinaryHostPath: cfg.MountS3BinaryPath,
-	}, stsClient)
+		ArchilBinaryHostPath: cfg.ArchilBinaryPath,
+	})
 
 	logger.Info(
-		"In-container volume backend enabled (s3fuse, experimental)",
-		"mountS3Binary", cfg.MountS3BinaryPath,
-		"assumeRole", cfg.VolumeAssumeRoleARN,
-		"sessionDuration", cfg.VolumeAssumeRoleSessionDuration.String(),
+		"Experimental in-container (Archil) volume backend enabled",
+		"archilBinary", cfg.ArchilBinaryPath,
 	)
 	return mounter, nil
 }

@@ -21,6 +21,24 @@
  */
 export interface DtoVolumeDTO {
     /**
+     * ArchilDisk identifies the Archil disk to mount, in the form \"owner/disk-name\" or \"dsk-XXXXXXXXXXXXXXXX\". Required when the sandbox uses the experimental in-container backend.
+     * @type {string}
+     * @memberof DtoVolumeDTO
+     */
+    'archilDisk'?: string;
+    /**
+     * ArchilMountToken is the per-disk mount token used as ARCHIL_MOUNT_TOKEN inside the sandbox. The runner forwards it to the daemon via env vars and never stores or logs it. Required when ArchilDisk is set.
+     * @type {string}
+     * @memberof DtoVolumeDTO
+     */
+    'archilMountToken'?: string;
+    /**
+     * ArchilRegion is the Archil region the disk lives in (e.g. \"aws-us-east-1\"). Required when ArchilDisk is set.
+     * @type {string}
+     * @memberof DtoVolumeDTO
+     */
+    'archilRegion'?: string;
+    /**
      * 
      * @type {string}
      * @memberof DtoVolumeDTO

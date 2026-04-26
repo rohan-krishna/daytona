@@ -10,7 +10,7 @@ export class Migration1776694154486 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "organization" ADD "defaultVolumeBackend" character varying NOT NULL DEFAULT 's3fuse-legacy'`,
+      `ALTER TABLE "organization" ADD "defaultVolumeBackend" character varying NOT NULL DEFAULT 's3fuse'`,
     )
   }
 

@@ -21,7 +21,7 @@
  */
 export interface UpdateOrganizationDefaultVolumeBackend {
     /**
-     * The default volume backend for the organization. `s3fuse-legacy` mounts on the runner host using the runner’s AWS credentials (legacy behavior). `s3fuse` and `experimental` mount inside the sandbox using short-lived, bucket-scoped STS credentials.
+     * The default volume backend for the organization. `s3fuse` mounts on the runner host (existing behavior). `experimental` mounts inside the sandbox via Archil using a per-volume mount token.
      * @type {string}
      * @memberof UpdateOrganizationDefaultVolumeBackend
      */
@@ -29,7 +29,6 @@ export interface UpdateOrganizationDefaultVolumeBackend {
 }
 
 export const UpdateOrganizationDefaultVolumeBackendDefaultVolumeBackendEnum = {
-    S3FUSE_LEGACY: 's3fuse-legacy',
     S3FUSE: 's3fuse',
     EXPERIMENTAL: 'experimental'
 } as const;

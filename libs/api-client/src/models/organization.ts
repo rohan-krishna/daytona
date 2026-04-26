@@ -173,7 +173,6 @@ export interface Organization {
 }
 
 export const OrganizationDefaultVolumeBackendEnum = {
-    S3FUSE_LEGACY: 's3fuse-legacy',
     S3FUSE: 's3fuse',
     EXPERIMENTAL: 'experimental'
 } as const;

@@ -192,7 +192,7 @@ export class Organization {
   updatedAt: Date
 
   @Column({
-    default: 's3fuse-legacy',
+    default: 's3fuse',
   })
   defaultVolumeBackend: string
 

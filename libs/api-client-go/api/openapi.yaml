@@ -9650,7 +9650,7 @@ components:
         defaultRegionId: defaultRegionId
         sandboxCreateRateLimitTtlSeconds: 2.027123023002322
         suspensionReason: suspensionReason
-        defaultVolumeBackend: s3fuse-legacy
+        defaultVolumeBackend: s3fuse
         sandboxLifecycleRateLimit: 9.301444243932576
         suspendedAt: 2000-01-23T04:56:07.000+00:00
         personal: true
@@ -9722,10 +9722,9 @@ components:
         defaultVolumeBackend:
           description: Default volume backend for sandbox volumes
           enum:
-          - s3fuse-legacy
           - s3fuse
           - experimental
-          example: s3fuse-legacy
+          example: s3fuse
           type: string
         authenticatedRateLimit:
           description: Authenticated rate limit per minute
@@ -10053,18 +10052,16 @@ components:
       type: object
     UpdateOrganizationDefaultVolumeBackend:
       example:
-        defaultVolumeBackend: s3fuse-legacy
+        defaultVolumeBackend: s3fuse
       properties:
         defaultVolumeBackend:
-          description: "The default volume backend for the organization. `s3fuse-legacy`\
-            \ mounts on the runner host using the runner’s AWS credentials (legacy\
-            \ behavior). `s3fuse` and `experimental` mount inside the sandbox using\
-            \ short-lived, bucket-scoped STS credentials."
+          description: The default volume backend for the organization. `s3fuse` mounts
+            on the runner host (existing behavior). `experimental` mounts inside the
+            sandbox via Archil using a per-volume mount token.
           enum:
-          - s3fuse-legacy
           - s3fuse
           - experimental
-          example: s3fuse-legacy
+          example: s3fuse
           type: string
       required:
       - defaultVolumeBackend

@@ -142,8 +142,6 @@ public class Organization {
    */
   @JsonAdapter(DefaultVolumeBackendEnum.Adapter.class)
   public enum DefaultVolumeBackendEnum {
-    S3FUSE_LEGACY("s3fuse-legacy"),
-    
     S3FUSE("s3fuse"),
     
     EXPERIMENTAL("experimental");

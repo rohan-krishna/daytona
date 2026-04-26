@@ -62,8 +62,8 @@ class Organization(BaseModel):
     @field_validator('default_volume_backend')
     def default_volume_backend_validate_enum(cls, value):
         """Validates the enum"""
-        if value not in set(['s3fuse-legacy', 's3fuse', 'experimental']):
-            raise ValueError("must be one of enum values ('s3fuse-legacy', 's3fuse', 'experimental')")
+        if value not in set(['s3fuse', 'experimental']):
+            raise ValueError("must be one of enum values ('s3fuse', 'experimental')")
         return value
 
     model_config = ConfigDict(

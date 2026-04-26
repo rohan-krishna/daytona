@@ -40,23 +40,17 @@ type Config struct {
 	AWSSecretAccessKey         string        `envconfig:"AWS_SECRET_ACCESS_KEY"`
 	AWSDefaultBucket           string        `envconfig:"AWS_DEFAULT_BUCKET"`
 	VolumeBackend              string        `envconfig:"VOLUME_BACKEND" default:"s3"`
-	// MountS3BinaryPath is the host path to a mount-s3 binary that will be
-	// bind-mounted into sandboxes that opt into an in-container volume
-	// backend ("s3fuse" or "experimental"). When empty, those backends are
-	// disabled and organizations that select them silently fall back to
-	// "s3fuse-legacy" (host-side mount using the runner's credentials).
-	MountS3BinaryPath string `envconfig:"MOUNT_S3_BINARY_PATH"`
-	// VolumeAssumeRoleARN is the IAM role the runner calls sts:AssumeRole on
-	// to mint bucket-scoped, short-lived credentials that get injected into
-	// sandboxes using an in-container volume backend ("s3fuse" or
-	// "experimental"). The runner's base AWS credentials (env / EC2 / ECS
-	// chain) must have sts:AssumeRole permission on this role. When empty,
-	// both in-container backends are disabled.
-	VolumeAssumeRoleARN string `envconfig:"VOLUME_ASSUME_ROLE_ARN"`
-	// VolumeAssumeRoleSessionDuration is the TTL of the minted session
-	// credentials. Must be <= the role's MaxSessionDuration (AWS default 1h;
-	// raise to up to 12h on the role if you want longer sandboxes).
-	VolumeAssumeRoleSessionDuration    time.Duration `envconfig:"VOLUME_ASSUME_ROLE_SESSION_DURATION" default:"12h" validate:"min=15m,max=12h"`
+	// ArchilBinaryPath is the host path to the `archil` CLI binary that will
+	// be bind-mounted read-only into sandboxes opting into the experimental
+	// in-container backend. When empty, the experimental backend is disabled
+	// and organizations that select it silently fall back to s3fuse.
+	//
+	// Install the binary on the runner host with:
+	//
+	//   curl -s https://archil.com/install | sh
+	//
+	// then point this at the resulting binary (typically /usr/local/bin/archil).
+	ArchilBinaryPath                   string        `envconfig:"ARCHIL_BINARY_PATH"`
 	ResourceLimitsDisabled             bool          `envconfig:"RESOURCE_LIMITS_DISABLED"`
 	DaemonStartTimeoutSec              int           `envconfig:"DAEMON_START_TIMEOUT_SEC"`
 	SandboxStartTimeoutSec             int           `envconfig:"SANDBOX_START_TIMEOUT_SEC"`

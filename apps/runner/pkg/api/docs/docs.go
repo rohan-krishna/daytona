@@ -1950,6 +1950,18 @@ const docTemplate = `{
         "dto.VolumeDTO": {
             "type": "object",
             "properties": {
+                "archilDisk": {
+                    "description": "ArchilDisk identifies the Archil disk to mount, in the form\n\"owner/disk-name\" or \"dsk-XXXXXXXXXXXXXXXX\". Required when the\nsandbox uses the experimental in-container backend.",
+                    "type": "string"
+                },
+                "archilMountToken": {
+                    "description": "ArchilMountToken is the per-disk mount token used as ARCHIL_MOUNT_TOKEN\ninside the sandbox. The runner forwards it to the daemon via env vars\nand never stores or logs it. Required when ArchilDisk is set.",
+                    "type": "string"
+                },
+                "archilRegion": {
+                    "description": "ArchilRegion is the Archil region the disk lives in\n(e.g. \"aws-us-east-1\"). Required when ArchilDisk is set.",
+                    "type": "string"
+                },
                 "mountPath": {
                     "type": "string"
                 },

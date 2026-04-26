@@ -15,7 +15,7 @@ require 'time'
 
 module DaytonaApiClient
   class UpdateOrganizationDefaultVolumeBackend
-    # The default volume backend for the organization. `s3fuse-legacy` mounts on the runner host using the runner’s AWS credentials (legacy behavior). `s3fuse` and `experimental` mount inside the sandbox using short-lived, bucket-scoped STS credentials.
+    # The default volume backend for the organization. `s3fuse` mounts on the runner host (existing behavior). `experimental` mounts inside the sandbox via Archil using a per-volume mount token.
     attr_accessor :default_volume_backend
 
     class EnumAttributeValidator
@@ -110,7 +110,7 @@ module DaytonaApiClient
     def valid?
       warn '[DEPRECATED] the `valid?` method is obsolete'
       return false if @default_volume_backend.nil?
-      default_volume_backend_validator = EnumAttributeValidator.new('String', ["s3fuse-legacy", "s3fuse", "experimental"])
+      default_volume_backend_validator = EnumAttributeValidator.new('String', ["s3fuse", "experimental"])
       return false unless default_volume_backend_validator.valid?(@default_volume_backend)
       true
     end
@@ -118,7 +118,7 @@ module DaytonaApiClient
     # Custom attribute writer method checking allowed values (enum).
     # @param [Object] default_volume_backend Object to be assigned
     def default_volume_backend=(default_volume_backend)
-      validator = EnumAttributeValidator.new('String', ["s3fuse-legacy", "s3fuse", "experimental"])
+      validator = EnumAttributeValidator.new('String', ["s3fuse", "experimental"])
       unless validator.valid?(default_volume_backend)
         fail ArgumentError, "invalid value for \"default_volume_backend\", must be one of #{validator.allowable_values}."
       end

@@ -97,8 +97,8 @@ export class OrganizationDto {
 
   @ApiProperty({
     description: 'Default volume backend for sandbox volumes',
-    example: 's3fuse-legacy',
-    enum: ['s3fuse-legacy', 's3fuse', 'experimental'],
+    example: 's3fuse',
+    enum: ['s3fuse', 'experimental'],
   })
   defaultVolumeBackend: string
 

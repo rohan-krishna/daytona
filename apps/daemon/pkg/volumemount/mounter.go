@@ -6,14 +6,16 @@
 // This is the sandbox-side counterpart of pkg/volume/incontainer in the
 // runner.
 //
+// Backend: Archil. Each volume is mounted with `archil mount <DISK>
+// <MOUNTPOINT> --region <REGION>`, authenticated by a per-disk
+// ARCHIL_MOUNT_TOKEN passed via the child process environment (never on the
+// command line, so it can't leak via /proc/<pid>/cmdline or `ps`).
+//
 // Env contract (must match pkg/volume/incontainer in runner):
 //
-//	DAYTONA_INCONTAINER_VOLUMES           JSON-encoded []Volume
-//	DAYTONA_INCONTAINER_MOUNT_S3_BINARY   absolute path to mount-s3 binary
-//	DAYTONA_INCONTAINER_AWS_REGION        optional, AWS region
-//	DAYTONA_INCONTAINER_AWS_ENDPOINT_URL  optional, S3-compatible endpoint
-//	DAYTONA_INCONTAINER_AWS_ACCESS_KEY_ID optional
-//	DAYTONA_INCONTAINER_AWS_SECRET_ACCESS_KEY optional
+//	DAYTONA_INCONTAINER_VOLUMES         JSON-encoded []Volume (with per-volume
+//	                                    archilDisk / archilRegion / archilMountToken)
+//	DAYTONA_INCONTAINER_ARCHIL_BINARY   absolute path to the archil CLI binary
 package volumemount
 
 import (
@@ -28,21 +30,19 @@ import (
 )
 
 const (
-	envVolumesJSON        = "DAYTONA_INCONTAINER_VOLUMES"
-	envMountS3Binary      = "DAYTONA_INCONTAINER_MOUNT_S3_BINARY"
-	envAWSRegion          = "DAYTONA_INCONTAINER_AWS_REGION"
-	envAWSEndpointURL     = "DAYTONA_INCONTAINER_AWS_ENDPOINT_URL"
-	envAWSAccessKeyID     = "DAYTONA_INCONTAINER_AWS_ACCESS_KEY_ID"
-	envAWSSecretAccessKey = "DAYTONA_INCONTAINER_AWS_SECRET_ACCESS_KEY" //nolint:gosec // env var name, not a credential
-	envAWSSessionToken    = "DAYTONA_INCONTAINER_AWS_SESSION_TOKEN"     //nolint:gosec // env var name, not a credential
-	envAWSCredsExpiration = "DAYTONA_INCONTAINER_AWS_CREDS_EXPIRATION"
+	envVolumesJSON  = "DAYTONA_INCONTAINER_VOLUMES"
+	envArchilBinary = "DAYTONA_INCONTAINER_ARCHIL_BINARY"
 )
 
-// Volume mirrors volume.Volume in the runner.
+// Volume mirrors volume.Volume in the runner. Only the fields the daemon
+// actually consumes are declared here.
 type Volume struct {
-	VolumeID  string `json:"volumeId"`
-	MountPath string `json:"mountPath"`
-	Subpath   string `json:"subpath,omitempty"`
+	VolumeID         string `json:"volumeId"`
+	MountPath        string `json:"mountPath"`
+	Subpath          string `json:"subpath,omitempty"`
+	ArchilDisk       string `json:"archilDisk,omitempty"`
+	ArchilRegion     string `json:"archilRegion,omitempty"`
+	ArchilMountToken string `json:"archilMountToken,omitempty"`
 }
 
 // MountAll reads the env payload and mounts every declared volume. It is
@@ -51,19 +51,26 @@ type Volume struct {
 // MountAll never errors fatally: a failed mount is logged and skipped so the
 // rest of the daemon can still come up. Callers should surface readiness
 // signals through their own paths.
+//
+// As a defensive measure the env vars carrying the volume spec (which contain
+// per-disk Archil mount tokens) are scrubbed from the daemon's own process
+// environment before returning. Child processes spawned later by the daemon
+// or by user code will not inherit them.
 func MountAll(ctx context.Context, logger *slog.Logger) {
+	defer scrubEnv(logger)
+
 	raw := os.Getenv(envVolumesJSON)
 	if raw == "" {
 		return
 	}
 
-	binary := os.Getenv(envMountS3Binary)
+	binary := os.Getenv(envArchilBinary)
 	if binary == "" {
-		logger.Warn("in-container volume spec present but mount-s3 binary path is empty", "env", envMountS3Binary)
+		logger.Warn("in-container volume spec present but archil binary path is empty", "env", envArchilBinary)
 		return
 	}
 	if _, err := os.Stat(binary); err != nil {
-		logger.Warn("in-container mount-s3 binary not found; skipping volume mounts", "path", binary, "error", err)
+		logger.Warn("in-container archil binary not found; skipping volume mounts", "path", binary, "error", err)
 		return
 	}
 
@@ -73,21 +80,33 @@ func MountAll(ctx context.Context, logger *slog.Logger) {
 		return
 	}
 
-	if exp := os.Getenv(envAWSCredsExpiration); exp != "" {
-		logger.Info("in-container volume credentials expire at", "expires_at", exp)
-	}
-
 	for _, v := range volumes {
 		if err := mountOne(ctx, logger, binary, v); err != nil {
-			logger.Error("failed to mount in-container volume", "volumeId", v.VolumeID, "mountPath", v.MountPath, "error", err)
+			logger.Error(
+				"failed to mount in-container volume",
+				"volumeId", v.VolumeID,
+				"mountPath", v.MountPath,
+				"archilDisk", v.ArchilDisk,
+				"archilRegion", v.ArchilRegion,
+				"error", err,
+			)
 			continue
 		}
 	}
 }
 
 func mountOne(ctx context.Context, logger *slog.Logger, binary string, v Volume) error {
-	if v.VolumeID == "" || v.MountPath == "" {
-		return fmt.Errorf("invalid volume entry: volumeId=%q mountPath=%q", v.VolumeID, v.MountPath)
+	if v.MountPath == "" {
+		return fmt.Errorf("invalid volume entry: empty mountPath")
+	}
+	if v.ArchilDisk == "" {
+		return fmt.Errorf("invalid volume entry: empty archilDisk")
+	}
+	if v.ArchilRegion == "" {
+		return fmt.Errorf("invalid volume entry: empty archilRegion")
+	}
+	if v.ArchilMountToken == "" {
+		return fmt.Errorf("invalid volume entry: empty archilMountToken")
 	}
 
 	if err := os.MkdirAll(v.MountPath, 0755); err != nil {
@@ -99,31 +118,42 @@ func mountOne(ctx context.Context, logger *slog.Logger, binary string, v Volume)
 		return nil
 	}
 
-	args := []string{
-		"--allow-other",
-		"--allow-delete",
-		"--allow-overwrite",
-		"--file-mode", "0666",
-		"--dir-mode", "0777",
-	}
+	// archil supports `disk[:/subpath]` syntax to mount a subdirectory of
+	// the disk as the mount root, mirroring NFS conventions.
+	target := v.ArchilDisk
 	if v.Subpath != "" {
-		// mount-s3 expects a trailing slash on --prefix.
-		prefix := v.Subpath
-		if prefix[len(prefix)-1] != '/' {
-			prefix += "/"
+		sub := v.Subpath
+		if sub[0] != '/' {
+			sub = "/" + sub
 		}
-		args = append(args, "--prefix", prefix)
+		target = v.ArchilDisk + ":" + sub
 	}
-	args = append(args, v.VolumeID, v.MountPath)
+
+	args := []string{
+		"mount",
+		target,
+		v.MountPath,
+		"--region", v.ArchilRegion,
+	}
 
 	cmd := exec.CommandContext(ctx, binary, args...)
-	cmd.Env = append(os.Environ(), translatedEnv()...)
+	// Pass the token via env, not argv: argv is visible in /proc/<pid>/cmdline
+	// and `ps`, env (for processes the daemon doesn't own) is not. The archil
+	// CLI itself reads ARCHIL_MOUNT_TOKEN from env.
+	cmd.Env = append(os.Environ(), "ARCHIL_MOUNT_TOKEN="+v.ArchilMountToken)
 
-	logger.Info("mounting in-container volume", "volumeId", v.VolumeID, "mountPath", v.MountPath, "subpath", v.Subpath)
+	logger.Info(
+		"mounting in-container volume",
+		"volumeId", v.VolumeID,
+		"mountPath", v.MountPath,
+		"archilDisk", v.ArchilDisk,
+		"archilRegion", v.ArchilRegion,
+		"subpath", v.Subpath,
+	)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("mount-s3 failed: %w: %s", err, string(out))
+		return fmt.Errorf("archil mount failed: %w: %s", err, string(out))
 	}
 
 	if err := waitUntilReady(ctx, v.MountPath); err != nil {
@@ -133,36 +163,22 @@ func mountOne(ctx context.Context, logger *slog.Logger, binary string, v Volume)
 	return nil
 }
 
-// translatedEnv maps the DAYTONA_INCONTAINER_AWS_* env vars the runner
-// injected onto the AWS_* names mount-s3 expects. Using dedicated names on the
-// runner side avoids leaking AWS_* vars into the user's shell by default.
+// scrubEnv unsets the env vars that carry the volume spec (which contain
+// per-disk mount tokens) from the daemon's own process environment, so they
+// don't leak into child processes spawned later or get printed by anything
+// that dumps `os.Environ()`.
 //
-// The credentials passed here are short-lived STS session credentials scoped
-// (by the runner) to only the buckets this sandbox mounts. AWS_SESSION_TOKEN
-// is therefore required — its presence is what tells the AWS SDK to treat
-// the access key as a temporary session credential.
-func translatedEnv() []string {
-	var env []string
-	if v := os.Getenv(envAWSRegion); v != "" {
-		env = append(env, "AWS_REGION="+v)
+// The archil mounts themselves are unaffected — once `archil mount` returns,
+// the FUSE server it forked off no longer needs ARCHIL_MOUNT_TOKEN.
+func scrubEnv(logger *slog.Logger) {
+	for _, k := range []string{envVolumesJSON, envArchilBinary} {
+		if err := os.Unsetenv(k); err != nil {
+			logger.Warn("failed to unset in-container env var", "var", k, "error", err)
+		}
 	}
-	if v := os.Getenv(envAWSEndpointURL); v != "" {
-		env = append(env, "AWS_ENDPOINT_URL="+v)
-	}
-	if v := os.Getenv(envAWSAccessKeyID); v != "" {
-		env = append(env, "AWS_ACCESS_KEY_ID="+v)
-	}
-	if v := os.Getenv(envAWSSecretAccessKey); v != "" {
-		env = append(env, "AWS_SECRET_ACCESS_KEY="+v)
-	}
-	if v := os.Getenv(envAWSSessionToken); v != "" {
-		env = append(env, "AWS_SESSION_TOKEN="+v)
-	}
-	return env
 }
 
 func isMountpoint(path string) bool {
-	// Compare the device ID of path to its parent: if they differ, it's a mount.
 	cleaned := filepath.Clean(path)
 	parent := filepath.Dir(cleaned)
 

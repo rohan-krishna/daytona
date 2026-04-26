@@ -29,10 +29,17 @@ type Mounter interface {
 // Volume describes a single volume to mount. It mirrors dto.VolumeDTO in a
 // package-neutral shape so the volume package can stay free of cross-package
 // dependencies.
+//
+// The Archil* fields are only populated when the sandbox uses the experimental
+// in-container (Archil) backend; the host-side s3fuse path ignores them.
 type Volume struct {
 	VolumeID  string `json:"volumeId"`
 	MountPath string `json:"mountPath"`
 	Subpath   string `json:"subpath,omitempty"`
+
+	ArchilDisk       string `json:"archilDisk,omitempty"`
+	ArchilRegion     string `json:"archilRegion,omitempty"`
+	ArchilMountToken string `json:"archilMountToken,omitempty"`
 }
 
 // InContainerMounter is an optional extension implemented by mounters that
@@ -54,9 +61,8 @@ type InContainerMounter interface {
 	ContainerBinds() []string
 
 	// ContainerEnv returns env vars that must be added to the sandbox (volume
-	// spec + credentials + binary path). Implementations may perform network
-	// calls (e.g. STS AssumeRole to mint scoped, short-lived credentials) and
-	// should honor the provided context. Returns nil when there are no
-	// volumes to mount.
+	// spec + per-volume credentials + binary path). Implementations may
+	// perform I/O and should honor the provided context. Returns nil when
+	// there are no volumes to mount.
 	ContainerEnv(ctx context.Context, volumes []Volume) ([]string, error)
 }
