@@ -139,9 +139,14 @@ func (d *DockerClient) BuildImage(ctx context.Context, buildImageDto dto.BuildSn
 				continue
 			}
 
+			username, password, err := resolveRegistryCredentials(ctx, &sourceRegistry)
+			if err != nil {
+				return fmt.Errorf("failed to resolve credentials for %s: %w", sourceRegistry.Url, err)
+			}
+
 			authConfig := docker_registry.AuthConfig{
-				Username: *sourceRegistry.Username,
-				Password: *sourceRegistry.Password,
+				Username: username,
+				Password: password,
 			}
 
 			url := sourceRegistry.Url

@@ -17,8 +17,13 @@ import (
 func (d *DockerClient) PushImage(ctx context.Context, imageName string, reg *dto.RegistryDTO) error {
 	d.logger.InfoContext(ctx, "Pushing image", "imageName", imageName)
 
+	auth, err := getRegistryAuth(ctx, reg)
+	if err != nil {
+		return err
+	}
+
 	responseBody, err := d.apiClient.ImagePush(ctx, imageName, image.PushOptions{
-		RegistryAuth: getRegistryAuth(reg),
+		RegistryAuth: auth,
 	})
 	if err != nil {
 		return err

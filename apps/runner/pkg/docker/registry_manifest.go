@@ -30,9 +30,13 @@ func getImageSizeFromRegistry(ctx context.Context, imageName string, registry *d
 	}
 
 	if registry != nil && registry.HasAuth() {
+		username, password, err := resolveRegistryCredentials(ctx, registry)
+		if err != nil {
+			return 0, fmt.Errorf("failed to resolve registry credentials: %w", err)
+		}
 		opts = append(opts, remote.WithAuth(&authn.Basic{
-			Username: *registry.Username,
-			Password: *registry.Password,
+			Username: username,
+			Password: password,
 		}))
 	}
 

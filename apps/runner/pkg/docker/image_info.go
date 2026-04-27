@@ -52,7 +52,12 @@ func (d *DockerClient) GetImageInfo(ctx context.Context, imageName string) (*Ima
 }
 
 func (d *DockerClient) InspectImageInRegistry(ctx context.Context, imageName string, registry *dto.RegistryDTO) (*ImageDigest, error) {
-	digest, err := d.apiClient.DistributionInspect(ctx, imageName, getRegistryAuth(registry))
+	auth, err := getRegistryAuth(ctx, registry)
+	if err != nil {
+		return nil, err
+	}
+
+	digest, err := d.apiClient.DistributionInspect(ctx, imageName, auth)
 	if err != nil {
 		return nil, err
 	}

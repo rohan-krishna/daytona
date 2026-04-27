@@ -31,6 +31,7 @@ import {
 const AXIOS_TIMEOUT_MS = 3000
 const DOCKER_HUB_REGISTRY = 'registry-1.docker.io'
 const DOCKER_HUB_URL = 'docker.io'
+const ECR_HOST_REGEX = /^\d+\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com$/
 
 /**
  * Normalizes Docker Hub URLs to 'docker.io' for storage.
@@ -42,6 +43,19 @@ function normalizeRegistryUrl(url: string): string {
   }
   // Strip trailing slashes for consistent matching
   return url.trim().replace(/\/+$/, '')
+}
+
+/**
+ * For ECR registries the runner does sts:AssumeRole with role ARN in
+ * `username` and orgId as ExternalId. We ship orgId through `password` so
+ * the runner DTO is unchanged. Mutates in-memory; callers don't persist.
+ */
+function injectEcrOrgIdAsPassword(registry: DockerRegistry): DockerRegistry {
+  const strippedUrl = registry.url.replace(/^(https?:\/\/)/, '')
+  if (ECR_HOST_REGEX.test(strippedUrl) && registry.organizationId) {
+    registry.password = registry.organizationId
+  }
+  return registry
 }
 
 export interface ImageDetails {
@@ -385,7 +399,8 @@ export class DockerRegistryService {
       (a, b) => (priority[a.registryType] ?? 1) - (priority[b.registryType] ?? 1),
     )
 
-    return this.findRegistryByUrlMatch(sortedRegistries, imageName)
+    const matched = this.findRegistryByUrlMatch(sortedRegistries, imageName)
+    return matched ? injectEcrOrgIdAsPassword(matched) : null
   }
 
   /**

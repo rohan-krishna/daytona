@@ -382,21 +382,97 @@ Daytona supports creating snapshots from images from GitHub Container Registry (
 
 Daytona supports creating snapshots from images from Amazon Elastic Container Registry.
 
-1. Navigate to [Daytona Registries ↗](https://app.daytona.io/dashboard/registries)
-2. Click the **Add Registry** button
-3. Enter the **registry name**, **registry URL**, **username**, **password**, and **project** (if applicable)
+ECR access uses cross-account IAM role assumption: you create a role in
+your AWS account that trusts Daytona's runner principal, and Daytona
+assumes it on every pull to fetch a short-lived ECR token. **No long-lived
+AWS credentials are shared with Daytona, and no manual token rotation is
+required.**
+
+##### 1. Get the values from Daytona
+
+Open [Daytona Registries ↗](https://app.daytona.io/dashboard/registries)
+and copy:
+
+- **Daytona Broker ARN** — the IAM principal to grant assume-role access to.
+- **External ID** — your Daytona organization ID; used to scope trust to
+  your organization.
+
+##### 2. Create an IAM role in your AWS account
+
+In your AWS account, create an IAM role with the trust and permissions
+policies below. Replace `<DAYTONA_BROKER_ARN>` with the broker ARN and
+`<YOUR_EXTERNAL_ID>` with your Daytona organization ID from the previous
+step.
+
+Trust policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": { "AWS": "<DAYTONA_BROKER_ARN>" },
+    "Action": "sts:AssumeRole",
+    "Condition": {
+      "StringEquals": {
+        "sts:ExternalId": "<YOUR_EXTERNAL_ID>"
+      }
+    }
+  }]
+}
+```
+
+Permissions policy (read-only on ECR):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage"
+    ],
+    "Resource": "*"
+  }]
+}
+```
+
+Copy the ARN of the role you just created (e.g.
+`arn:aws:iam::123456789012:role/daytona-ecr-puller`).
+
+##### 3. Register the registry in Daytona
+
+1. On [Daytona Registries ↗](https://app.daytona.io/dashboard/registries),
+   click the **Add Registry** button.
+2. Enter the **registry name**, **registry URL**, and **username**:
 
 - **Registry URL**: `<account_id>.dkr.ecr.<region>.amazonaws.com`
-- **Username**: `AWS`
-- **Password**: [Authorization token](https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html)
+- **Username**: ARN of the IAM role created in step 2
+- **Password**: leave blank — Daytona fills it with your External ID
+  automatically
 
-4. After the container registry is successfully created, navigate to [Daytona Snapshots ↗](https://app.daytona.io/dashboard/snapshots)
-5. Click the **Create Snapshot** button
-6. Enter the **snapshot name** and **image** (tag or digest). When creating the snapshot, make sure to input the entire image name, including the registry location and repository name (e.g. **`123456789012.dkr.ecr.us-east-1.amazonaws.com/my-repo/custom-alpine:3.21`**)
+##### 4. Create the snapshot
 
-:::caution
-Amazon ECR authorization tokens expire after **12 hours**. Update the registry password in Daytona each time the token expires. Support for automatic renewal is coming soon.
-:::
+1. Navigate to [Daytona Snapshots ↗](https://app.daytona.io/dashboard/snapshots).
+2. Click the **Create Snapshot** button.
+3. Enter the **snapshot name** and **image** using the full image
+   reference, including the registry location and repository name
+   (e.g. **`123456789012.dkr.ecr.us-east-1.amazonaws.com/my-repo/custom-alpine:3.21`**).
+
+##### Optional: harden the trust policy
+
+Daytona's runner sends a `daytona-<orgId>-pull` session name on every
+AssumeRole call, which you can require in your trust policy for CloudTrail
+auditability. Add inside `Condition`:
+
+```json
+"StringLike": {
+  "sts:RoleSessionName": "daytona-<YOUR_EXTERNAL_ID>-*"
+}
+```
 
 ### Using the declarative builder
 
