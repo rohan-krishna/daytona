@@ -32,6 +32,7 @@ class AsyncEventDispatcher:
     _registered_events: set[str]
     _disconnect_task: asyncio.Task[None] | None
     _disconnect_generation: int
+    _closed: bool
     _lock: asyncio.Lock
 
     _DISCONNECT_DELAY: float = 30.0
@@ -44,6 +45,7 @@ class AsyncEventDispatcher:
         self._connected = False
         self._failed = False
         self._fail_error = None
+        self._closed = False
         self._listeners = {}
         self._registered_events = set()
         self._disconnect_task = None
@@ -57,7 +59,7 @@ class AsyncEventDispatcher:
         Non-blocking. Creates a background task if not already connected and no
         attempt is currently running.
         """
-        if self._connected:
+        if self._closed or self._connected:
             return
         if self._connect_task is not None and not self._connect_task.done():
             return
@@ -78,7 +80,7 @@ class AsyncEventDispatcher:
     async def connect(self, timeout: float = 5.0) -> None:
         """Establish the Socket.IO connection. Raises on failure."""
         async with self._lock:
-            if self._connected:
+            if self._closed or self._connected:
                 return
             old_sio = self._sio
             self._sio = None
@@ -170,6 +172,9 @@ class AsyncEventDispatcher:
         Returns:
             Unsubscribe function.
         """
+        if self._closed:
+            return lambda: None
+
         self.ensure_connected()
 
         self._disconnect_generation += 1
@@ -245,6 +250,7 @@ class AsyncEventDispatcher:
 
     async def disconnect(self) -> None:
         """Disconnect and clean up resources."""
+        self._closed = True
         await self._disconnect()
 
     async def _disconnect(self, expected_generation: int | None = None) -> None:

@@ -38,10 +38,12 @@ class AsyncEventSubscriptionManager:
 
     _dispatcher: AsyncEventDispatcher
     _subscriptions: dict[str, _Subscription]
+    _closed: bool
 
     def __init__(self, dispatcher: AsyncEventDispatcher) -> None:
         self._dispatcher = dispatcher
         self._subscriptions = {}
+        self._closed = False
 
     @property
     def dispatcher(self) -> AsyncEventDispatcher:
@@ -53,6 +55,9 @@ class AsyncEventSubscriptionManager:
         handler: AsyncEventHandler,
         events: list[str],
     ) -> str:
+        if self._closed:
+            return ""
+
         unsubscribe_fn = self._dispatcher.subscribe(resource_id, handler, events)
 
         sub_id = uuid.uuid4().hex
@@ -63,6 +68,9 @@ class AsyncEventSubscriptionManager:
         return sub_id
 
     def refresh(self, sub_id: str) -> bool:
+        if self._closed:
+            return False
+
         sub = self._subscriptions.get(sub_id)
         if sub is None:
             return False
@@ -100,6 +108,7 @@ class AsyncEventSubscriptionManager:
         sub.timer = loop.call_later(_SUBSCRIPTION_TTL, _expire)
 
     def shutdown(self) -> None:
+        self._closed = True
         for sub in self._subscriptions.values():
             if sub.timer is not None:
                 sub.timer.cancel()
