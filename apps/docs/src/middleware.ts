@@ -72,8 +72,9 @@ export const onRequest = defineMiddleware(
       const firstSegment = slug.split('/')[0]
       const isLocalePrefixed = /^[a-z]{2}$/.test(firstSegment)
       const looksLikeStaticAsset = /\.[^/]+$/.test(slug)
+      const isOpenGraphImage = slug.startsWith('opengraph/')
 
-      if (!isLocalePrefixed && !looksLikeStaticAsset) {
+      if (!isLocalePrefixed && !looksLikeStaticAsset && !isOpenGraphImage) {
         const targetUrl = new URL(`/docs/en/${slug}`, url)
         targetUrl.search = url.search
         return await proxyRequest(targetUrl)
