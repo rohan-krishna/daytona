@@ -705,9 +705,6 @@ export const getSidebarConfig = (
           href: localizePath('/docs/manage/platform-management', locale),
           label: t('sidebarconfig.platformManagementOverview'),
           description: t('sidebarconfig.platformManagementOverviewDescription'),
-          attrs: {
-            icon: 'document.svg',
-          },
         },
         {
           type: 'link',
@@ -758,9 +755,6 @@ export const getSidebarConfig = (
           href: localizePath('/docs/manage/security-compliance', locale),
           label: t('sidebarconfig.securityComplianceOverview'),
           description: t('sidebarconfig.securityComplianceOverviewDescription'),
-          attrs: {
-            icon: 'document.svg',
-          },
         },
         {
           type: 'link',
@@ -790,15 +784,6 @@ export const getSidebarConfig = (
       entries: [
         {
           type: 'link',
-          href: localizePath('/docs/manage/telemetry', locale),
-          label: t('sidebarconfig.telemetryOverview'),
-          description: t('sidebarconfig.telemetryOverviewDescription'),
-          attrs: {
-            icon: 'document.svg',
-          },
-        },
-        {
-          type: 'link',
           href: localizePath('/docs/experimental/otel-collection', locale),
           label: t('sidebarconfig.otelCollection'),
           description: t('sidebarconfig.otelCollectionDescription'),
@@ -817,17 +802,6 @@ export const getSidebarConfig = (
       entries: [
         {
           type: 'link',
-          href: localizePath('/docs/deployments/open-source', locale),
-          label: t('sidebarconfig.deploymentsOpenSourceOverview'),
-          description: t(
-            'sidebarconfig.deploymentsOpenSourceOverviewDescription'
-          ),
-          attrs: {
-            icon: 'document.svg',
-          },
-        },
-        {
-          type: 'link',
           href: localizePath('/docs/oss-deployment', locale),
           label: t('sidebarconfig.ossDeployment'),
           disablePagination: true,
@@ -843,20 +817,6 @@ export const getSidebarConfig = (
       homePageHref: localizePath('/docs', locale),
       category: NavigationCategory.DEPLOYMENTS_CUSTOMER_MANAGED_COMPUTE,
       entries: [
-        {
-          type: 'link',
-          href: localizePath(
-            '/docs/deployments/customer-managed-compute',
-            locale
-          ),
-          label: t('sidebarconfig.deploymentsCustomerManagedOverview'),
-          description: t(
-            'sidebarconfig.deploymentsCustomerManagedOverviewDescription'
-          ),
-          attrs: {
-            icon: 'document.svg',
-          },
-        },
         {
           type: 'link',
           href: localizePath('/docs/runners', locale),
