@@ -19,29 +19,20 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
-from typing import Any, ClassVar, Dict, List, Optional
-from daytona_api_client_async.models.volume_state import VolumeState
+from typing import Any, ClassVar, Dict, List
 from pydantic import TypeAdapter
 from typing import Optional, Set
 from typing_extensions import Self
 
 _JSON_ADAPTER = TypeAdapter(Dict[str, Any])
 
-class VolumeDto(BaseModel):
+class ChangeVolumeBackend(BaseModel):
     """
-    VolumeDto
+    ChangeVolumeBackend
     """ # noqa: E501
-    id: StrictStr = Field(description="Volume ID")
-    name: StrictStr = Field(description="Volume name")
-    organization_id: StrictStr = Field(description="Organization ID", serialization_alias="organizationId")
-    state: VolumeState = Field(description="Volume state")
-    created_at: StrictStr = Field(description="Creation timestamp", serialization_alias="createdAt")
-    updated_at: StrictStr = Field(description="Last update timestamp", serialization_alias="updatedAt")
-    last_used_at: Optional[StrictStr] = Field(default=None, description="Last used timestamp", serialization_alias="lastUsedAt")
-    error_reason: Optional[StrictStr] = Field(description="The error reason of the volume", serialization_alias="errorReason")
-    backend: StrictStr = Field(description="Backend that physically stores the volume. Set when the volume is created from the organization default and immutable afterwards.")
+    backend: StrictStr = Field(description="The backend to switch the volume to. `s3fuse` mounts the volume's bucket on the runner host; `experimental` exposes the same bucket through an Archil disk that is mounted inside the sandbox. The volume's data (its S3 bucket) is preserved across the switch - only the mount strategy changes.")
     additional_properties: Dict[str, Any] = {}
-    __properties: ClassVar[List[str]] = ["id", "name", "organizationId", "state", "createdAt", "updatedAt", "lastUsedAt", "errorReason", "backend"]
+    __properties: ClassVar[List[str]] = ["backend"]
 
     @field_validator('backend')
     def backend_validate_enum(cls, value):
@@ -67,7 +58,7 @@ class VolumeDto(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of VolumeDto from a JSON string"""
+        """Create an instance of ChangeVolumeBackend from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -95,21 +86,11 @@ class VolumeDto(BaseModel):
             for _key, _value in self.additional_properties.items():
                 _dict[_key] = _value
 
-        # set to None if last_used_at (nullable) is None
-        # and model_fields_set contains the field
-        if self.last_used_at is None and "last_used_at" in self.model_fields_set:
-            _dict['lastUsedAt'] = None
-
-        # set to None if error_reason (nullable) is None
-        # and model_fields_set contains the field
-        if self.error_reason is None and "error_reason" in self.model_fields_set:
-            _dict['errorReason'] = None
-
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of VolumeDto from a dict"""
+        """Create an instance of ChangeVolumeBackend from a dict"""
         if obj is None:
             return None
 
@@ -117,14 +98,6 @@ class VolumeDto(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name"),
-            "organization_id": obj.get("organizationId"),
-            "state": obj.get("state"),
-            "created_at": obj.get("createdAt"),
-            "updated_at": obj.get("updatedAt"),
-            "last_used_at": obj.get("lastUsedAt"),
-            "error_reason": obj.get("errorReason"),
             "backend": obj.get("backend")
         })
         # store additional fields in additional_properties

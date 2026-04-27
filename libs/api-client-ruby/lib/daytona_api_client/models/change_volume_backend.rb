@@ -14,32 +14,8 @@ require 'date'
 require 'time'
 
 module DaytonaApiClient
-  class VolumeDto
-    # Volume ID
-    attr_accessor :id
-
-    # Volume name
-    attr_accessor :name
-
-    # Organization ID
-    attr_accessor :organization_id
-
-    # Volume state
-    attr_accessor :state
-
-    # Creation timestamp
-    attr_accessor :created_at
-
-    # Last update timestamp
-    attr_accessor :updated_at
-
-    # Last used timestamp
-    attr_accessor :last_used_at
-
-    # The error reason of the volume
-    attr_accessor :error_reason
-
-    # Backend that physically stores the volume. Set when the volume is created from the organization default and immutable afterwards.
+  class ChangeVolumeBackend
+    # The backend to switch the volume to. `s3fuse` mounts the volume's bucket on the runner host; `experimental` exposes the same bucket through an Archil disk that is mounted inside the sandbox. The volume's data (its S3 bucket) is preserved across the switch - only the mount strategy changes.
     attr_accessor :backend
 
     class EnumAttributeValidator
@@ -67,14 +43,6 @@ module DaytonaApiClient
     # Attribute mapping from ruby-style variable name to JSON key.
     def self.attribute_map
       {
-        :'id' => :'id',
-        :'name' => :'name',
-        :'organization_id' => :'organizationId',
-        :'state' => :'state',
-        :'created_at' => :'createdAt',
-        :'updated_at' => :'updatedAt',
-        :'last_used_at' => :'lastUsedAt',
-        :'error_reason' => :'errorReason',
         :'backend' => :'backend'
       }
     end
@@ -92,14 +60,6 @@ module DaytonaApiClient
     # Attribute type mapping.
     def self.openapi_types
       {
-        :'id' => :'String',
-        :'name' => :'String',
-        :'organization_id' => :'String',
-        :'state' => :'VolumeState',
-        :'created_at' => :'String',
-        :'updated_at' => :'String',
-        :'last_used_at' => :'String',
-        :'error_reason' => :'String',
         :'backend' => :'String'
       }
     end
@@ -107,8 +67,6 @@ module DaytonaApiClient
     # List of attributes with nullable: true
     def self.openapi_nullable
       Set.new([
-        :'last_used_at',
-        :'error_reason',
       ])
     end
 
@@ -116,63 +74,17 @@ module DaytonaApiClient
     # @param [Hash] attributes Model attributes in the form of hash
     def initialize(attributes = {})
       if (!attributes.is_a?(Hash))
-        fail ArgumentError, "The input argument (attributes) must be a hash in `DaytonaApiClient::VolumeDto` initialize method"
+        fail ArgumentError, "The input argument (attributes) must be a hash in `DaytonaApiClient::ChangeVolumeBackend` initialize method"
       end
 
       # check to see if the attribute exists and convert string to symbol for hash key
       acceptable_attribute_map = self.class.acceptable_attribute_map
       attributes = attributes.each_with_object({}) { |(k, v), h|
         if (!acceptable_attribute_map.key?(k.to_sym))
-          fail ArgumentError, "`#{k}` is not a valid attribute in `DaytonaApiClient::VolumeDto`. Please check the name to make sure it's valid. List of attributes: " + acceptable_attribute_map.keys.inspect
+          fail ArgumentError, "`#{k}` is not a valid attribute in `DaytonaApiClient::ChangeVolumeBackend`. Please check the name to make sure it's valid. List of attributes: " + acceptable_attribute_map.keys.inspect
         end
         h[k.to_sym] = v
       }
-
-      if attributes.key?(:'id')
-        self.id = attributes[:'id']
-      else
-        self.id = nil
-      end
-
-      if attributes.key?(:'name')
-        self.name = attributes[:'name']
-      else
-        self.name = nil
-      end
-
-      if attributes.key?(:'organization_id')
-        self.organization_id = attributes[:'organization_id']
-      else
-        self.organization_id = nil
-      end
-
-      if attributes.key?(:'state')
-        self.state = attributes[:'state']
-      else
-        self.state = nil
-      end
-
-      if attributes.key?(:'created_at')
-        self.created_at = attributes[:'created_at']
-      else
-        self.created_at = nil
-      end
-
-      if attributes.key?(:'updated_at')
-        self.updated_at = attributes[:'updated_at']
-      else
-        self.updated_at = nil
-      end
-
-      if attributes.key?(:'last_used_at')
-        self.last_used_at = attributes[:'last_used_at']
-      end
-
-      if attributes.key?(:'error_reason')
-        self.error_reason = attributes[:'error_reason']
-      else
-        self.error_reason = nil
-      end
 
       if attributes.key?(:'backend')
         self.backend = attributes[:'backend']
@@ -186,30 +98,6 @@ module DaytonaApiClient
     def list_invalid_properties
       warn '[DEPRECATED] the `list_invalid_properties` method is obsolete'
       invalid_properties = Array.new
-      if @id.nil?
-        invalid_properties.push('invalid value for "id", id cannot be nil.')
-      end
-
-      if @name.nil?
-        invalid_properties.push('invalid value for "name", name cannot be nil.')
-      end
-
-      if @organization_id.nil?
-        invalid_properties.push('invalid value for "organization_id", organization_id cannot be nil.')
-      end
-
-      if @state.nil?
-        invalid_properties.push('invalid value for "state", state cannot be nil.')
-      end
-
-      if @created_at.nil?
-        invalid_properties.push('invalid value for "created_at", created_at cannot be nil.')
-      end
-
-      if @updated_at.nil?
-        invalid_properties.push('invalid value for "updated_at", updated_at cannot be nil.')
-      end
-
       if @backend.nil?
         invalid_properties.push('invalid value for "backend", backend cannot be nil.')
       end
@@ -221,76 +109,10 @@ module DaytonaApiClient
     # @return true if the model is valid
     def valid?
       warn '[DEPRECATED] the `valid?` method is obsolete'
-      return false if @id.nil?
-      return false if @name.nil?
-      return false if @organization_id.nil?
-      return false if @state.nil?
-      return false if @created_at.nil?
-      return false if @updated_at.nil?
       return false if @backend.nil?
       backend_validator = EnumAttributeValidator.new('String', ["s3fuse", "experimental"])
       return false unless backend_validator.valid?(@backend)
       true
-    end
-
-    # Custom attribute writer method with validation
-    # @param [Object] id Value to be assigned
-    def id=(id)
-      if id.nil?
-        fail ArgumentError, 'id cannot be nil'
-      end
-
-      @id = id
-    end
-
-    # Custom attribute writer method with validation
-    # @param [Object] name Value to be assigned
-    def name=(name)
-      if name.nil?
-        fail ArgumentError, 'name cannot be nil'
-      end
-
-      @name = name
-    end
-
-    # Custom attribute writer method with validation
-    # @param [Object] organization_id Value to be assigned
-    def organization_id=(organization_id)
-      if organization_id.nil?
-        fail ArgumentError, 'organization_id cannot be nil'
-      end
-
-      @organization_id = organization_id
-    end
-
-    # Custom attribute writer method with validation
-    # @param [Object] state Value to be assigned
-    def state=(state)
-      if state.nil?
-        fail ArgumentError, 'state cannot be nil'
-      end
-
-      @state = state
-    end
-
-    # Custom attribute writer method with validation
-    # @param [Object] created_at Value to be assigned
-    def created_at=(created_at)
-      if created_at.nil?
-        fail ArgumentError, 'created_at cannot be nil'
-      end
-
-      @created_at = created_at
-    end
-
-    # Custom attribute writer method with validation
-    # @param [Object] updated_at Value to be assigned
-    def updated_at=(updated_at)
-      if updated_at.nil?
-        fail ArgumentError, 'updated_at cannot be nil'
-      end
-
-      @updated_at = updated_at
     end
 
     # Custom attribute writer method checking allowed values (enum).
@@ -308,14 +130,6 @@ module DaytonaApiClient
     def ==(o)
       return true if self.equal?(o)
       self.class == o.class &&
-          id == o.id &&
-          name == o.name &&
-          organization_id == o.organization_id &&
-          state == o.state &&
-          created_at == o.created_at &&
-          updated_at == o.updated_at &&
-          last_used_at == o.last_used_at &&
-          error_reason == o.error_reason &&
           backend == o.backend
     end
 
@@ -328,7 +142,7 @@ module DaytonaApiClient
     # Calculates hash code according to all attributes.
     # @return [Integer] Hash code
     def hash
-      [id, name, organization_id, state, created_at, updated_at, last_used_at, error_reason, backend].hash
+      [backend].hash
     end
 
     # Builds the object from hash
