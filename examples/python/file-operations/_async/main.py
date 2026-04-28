@@ -91,6 +91,12 @@ async def main():
         config_content = await sandbox.fs.download_file(os.path.join(new_dir, "config.json"))
         print("Config content:", config_content.decode("utf-8"))
 
+        # Stream download — pipes file content without buffering in memory
+        print("\nStreaming download example:")
+        stream = await sandbox.fs.download_file_stream(os.path.join(new_dir, "config.json"))
+        streamed_chunks = [chunk async for chunk in stream]
+        print("Streamed content:", b"".join(streamed_chunks).decode("utf-8"))
+
         # Create a report of all operations
         report_data = f"""
         Project Files Report:

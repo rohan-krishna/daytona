@@ -16,6 +16,7 @@ import { FileSystemApi } from '@daytona/toolbox-api-client'
 import { dynamicImport } from './utils/Import'
 import { RUNTIME, Runtime } from './utils/Runtime'
 import { createDaytonaError, DaytonaError } from './errors/DaytonaError'
+import type { Readable } from 'stream'
 import {
   normalizeResponseStream,
   processDownloadFilesResponseWithBusboy,
@@ -228,6 +229,83 @@ export class FileSystem {
     if (response[0].error) {
       throw createFileDownloadError(response[0].error, response[0].errorDetails)
     }
+  }
+
+  /**
+   * Downloads a single file from the Sandbox as a readable stream without buffering
+   * the entire file into memory. The returned stream can be piped directly to an HTTP
+   * response, a file write stream, or any other writable destination.
+   *
+   * This method is only supported in Node.js-compatible runtimes (Node.js, Bun).
+   * Browser and serverless environments should use {@link downloadFile} instead.
+   *
+   * @param {string} remotePath - Path to the file in the Sandbox. Relative paths are
+   *   resolved based on the sandbox working directory.
+   * @param {number} [timeout] - Timeout in seconds. 0 means no timeout. Default is 30 minutes.
+   * @returns {Promise<Readable>} A Node.js Readable stream of the file content.
+   *
+   * @example
+   * // Pipe directly to an HTTP response
+   * const stream = await sandbox.fs.downloadFileStream('outputs/report.pdf');
+   * stream.pipe(res);
+   *
+   * @example
+   * // Pipe to a local file
+   * import { createWriteStream } from 'fs';
+   * const stream = await sandbox.fs.downloadFileStream('outputs/data.csv');
+   * stream.pipe(createWriteStream('local-data.csv'));
+   */
+  @WithInstrumentation()
+  public async downloadFileStream(remotePath: string, timeout: number = 30 * 60): Promise<Readable> {
+    const isNonStreamingRuntime = RUNTIME === Runtime.BROWSER || RUNTIME === Runtime.SERVERLESS
+    if (isNonStreamingRuntime) {
+      throw new DaytonaError(
+        'downloadFileStream is not supported in browser or serverless environments. Use downloadFile instead.',
+      )
+    }
+
+    const response = await this.apiClient.downloadFiles(
+      { paths: [remotePath] },
+      {
+        responseType: 'stream',
+        timeout: timeout * 1000,
+      },
+    )
+
+    const responseStream = normalizeResponseStream(response.data)
+    const metadataMap = new Map<string, DownloadMetadata>()
+    metadataMap.set(remotePath, {})
+
+    return new Promise<Readable>((resolve, reject) => {
+      let resolvedStream: Readable | null = null
+
+      processDownloadFilesResponseWithBusboy(
+        responseStream,
+        response.headers as Record<string, string>,
+        metadataMap,
+        (_source, fileStream) => {
+          resolvedStream = fileStream as Readable
+          resolve(resolvedStream)
+        },
+      )
+        .then(() => {
+          if (!resolvedStream) {
+            const metadata = metadataMap.get(remotePath)
+            if (metadata?.error) {
+              reject(createFileDownloadError(metadata.error, metadata.errorDetails))
+            } else {
+              reject(new DaytonaError(`No file data received for: ${remotePath}`))
+            }
+          }
+        })
+        .catch((err) => {
+          if (!resolvedStream) {
+            reject(err)
+          } else if (!resolvedStream.destroyed) {
+            resolvedStream.destroy(err instanceof Error ? err : new Error(String(err)))
+          }
+        })
+    })
   }
 
   /**

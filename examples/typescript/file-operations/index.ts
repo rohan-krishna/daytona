@@ -104,6 +104,17 @@ async function main() {
     const reportBuffer = await sandbox.fs.downloadFile(path.join(newDir, 'config.json'))
     console.log('Config content:', reportBuffer.toString())
 
+    //  stream download — pipes file content without buffering in memory
+    console.log('\nStreaming download example:')
+    const stream = await sandbox.fs.downloadFileStream(path.join(newDir, 'config.json'))
+    const chunks: Buffer[] = []
+    await new Promise<void>((resolve, reject) => {
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk))
+      stream.on('end', resolve)
+      stream.on('error', reject)
+    })
+    console.log('Streamed content:', Buffer.concat(chunks).toString())
+
     // Create a report of all operations
     const reportData = `
 Project Files Report:

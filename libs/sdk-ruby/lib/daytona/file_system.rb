@@ -5,9 +5,10 @@
 
 require 'tempfile'
 require 'fileutils'
+require_relative 'file_transfer'
 
 module Daytona
-  class FileSystem
+  class FileSystem # rubocop:disable Metrics/ClassLength
     include Instrumentation
 
     # @return [String] The Sandbox ID
@@ -149,6 +150,37 @@ module Daytona
       else
         file
       end
+    rescue StandardError => e
+      raise Sdk::Error, "Failed to download file: #{e.message}"
+    end
+
+    # Downloads a single file from the Sandbox as a stream without buffering the entire
+    # file into memory. Yields file content in chunks to the given block, or returns an
+    # Enumerator if no block is given.
+    #
+    # @param remote_path [String] Path to the file in the Sandbox. Relative paths are resolved
+    #   based on the sandbox working directory.
+    # @param timeout [Integer] Timeout for the download operation in seconds. 0 means no timeout.
+    #   Default is 30 minutes.
+    # @yield [chunk] Yields each chunk of file content as it arrives
+    # @yieldparam chunk [String] A binary string chunk of file content
+    # @return [Enumerator, nil] An Enumerator yielding chunks if no block given, nil otherwise
+    # @raise [Daytona::Sdk::Error] If the file does not exist or the operation fails
+    #
+    # @example Stream to a local file without loading into memory
+    #   File.open("local_copy.bin", "wb") do |f|
+    #     sandbox.fs.download_file_stream("workspace/large-file.bin") { |chunk| f.write(chunk) }
+    #   end
+    #
+    # @example Collect chunks with an Enumerator
+    #   content = sandbox.fs.download_file_stream("workspace/data.json").reduce(:+)
+    #   puts content
+    def download_file_stream(remote_path, timeout: 30 * 60, &)
+      return enum_for(__method__, remote_path, timeout:) unless block_given?
+
+      FileTransfer.stream_download(api_client: toolbox_api.api_client, remote_path: remote_path,
+                                   timeout: timeout, &)
+      nil
     rescue StandardError => e
       raise Sdk::Error, "Failed to download file: #{e.message}"
     end
@@ -364,8 +396,8 @@ module Daytona
     end
 
     instrument :create_folder, :delete_file, :get_file_info, :list_files, :download_file,
-               :upload_file, :upload_files, :find_files, :search_files, :move_files,
-               :replace_in_files, :set_file_permissions,
+               :download_file_stream, :upload_file, :upload_files, :find_files,
+               :search_files, :move_files, :replace_in_files, :set_file_permissions,
                component: 'FileSystem'
 
     private

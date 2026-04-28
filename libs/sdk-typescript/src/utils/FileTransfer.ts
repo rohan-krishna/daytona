@@ -102,6 +102,7 @@ export async function processDownloadFilesResponseWithBusboy(
   stream: any,
   headers: Record<string, string>,
   metadataMap: Map<string, DownloadMetadata>,
+  onFileStream?: (source: string, fileStream: any) => void,
 ): Promise<void> {
   const fileTasks: Promise<void>[] = []
 
@@ -137,7 +138,9 @@ export async function processDownloadFilesResponseWithBusboy(
           metadata.error = `Stream error: ${err.message}`
         })
       } else if (fieldName === 'file') {
-        if (metadata.destination) {
+        if (onFileStream) {
+          onFileStream(source, fileStream)
+        } else if (metadata.destination) {
           // Stream to file
           fileTasks.push(
             new Promise((resolveTask) => {

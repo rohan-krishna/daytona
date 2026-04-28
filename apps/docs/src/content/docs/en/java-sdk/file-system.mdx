@@ -62,6 +62,52 @@ Downloads a file into memory.
 
 - `io.daytona.sdk.exception.DaytonaException` - if download or local read fails
 
+#### downloadFileStream()
+```java
+public InputStream downloadFileStream(String remotePath) throws io.daytona.sdk.exception.DaytonaException
+```
+
+Downloads a single file from the Sandbox as a stream without buffering the entire file
+into memory. The returned `InputStream` can be piped directly to an HTTP response,
+written to a file, or processed on the fly.
+
+The caller is responsible for closing the returned stream.
+
+**Parameters**:
+
+- `remotePath` _String_ - source file path in the Sandbox
+
+**Returns**:
+
+- `InputStream` - an `InputStream` streaming the file content
+
+**Throws**:
+
+- `io.daytona.sdk.exception.DaytonaException` - if the file does not exist or access is denied
+
+#### downloadFileStream()
+```java
+public InputStream downloadFileStream(String remotePath, int timeoutSeconds) throws io.daytona.sdk.exception.DaytonaException
+```
+
+Downloads a single file from the Sandbox as a stream without buffering the entire file
+into memory, with a custom timeout.
+
+The caller is responsible for closing the returned stream.
+
+**Parameters**:
+
+- `remotePath` _String_ - source file path in the Sandbox
+- `timeoutSeconds` _int_ - timeout in seconds; 0 means no timeout
+
+**Returns**:
+
+- `InputStream` - an `InputStream` streaming the file content
+
+**Throws**:
+
+- `io.daytona.sdk.exception.DaytonaException` - if the file does not exist or access is denied
+
 #### uploadFile()
 ```java
 public void uploadFile(byte[] content, String remotePath)

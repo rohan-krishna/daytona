@@ -14,6 +14,7 @@ import (
 	"github.com/daytonaio/daytona/libs/sdk-go/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -217,6 +218,16 @@ func TestE2E(t *testing.T) {
 		localData, localReadErr := os.ReadFile(localPath)
 		require.NoError(t, localReadErr)
 		assert.Equal(t, "hello world", string(localData))
+	})
+
+	t.Run("FileSystem/DownloadFileStream", func(t *testing.T) {
+		stream, err := sandbox.FileSystem.DownloadFileStream(ctx, helloPath)
+		require.NoError(t, err)
+		defer stream.Close()
+
+		data, err := io.ReadAll(stream)
+		require.NoError(t, err)
+		assert.Equal(t, "hello world", string(data))
 	})
 
 	t.Run("FileSystem/FindFiles", func(t *testing.T) {

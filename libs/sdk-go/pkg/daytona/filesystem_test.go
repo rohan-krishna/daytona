@@ -6,14 +6,18 @@ package daytona
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/textproto"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	sdkerrors "github.com/daytonaio/daytona/libs/sdk-go/pkg/errors"
 	"github.com/daytonaio/daytona/libs/sdk-go/pkg/options"
 	toolbox "github.com/daytonaio/daytona/libs/toolbox-api-client-go"
 	"github.com/stretchr/testify/assert"
@@ -135,6 +139,97 @@ func TestDownloadFile(t *testing.T) {
 	data, err := fs.DownloadFile(ctx, "/home/user/file.txt", nil)
 	require.NoError(t, err)
 	assert.Equal(t, []byte("file content here"), data)
+}
+
+func TestDownloadFileStream(t *testing.T) {
+	remotePath := "/home/user/file.txt"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+		assert.Equal(t, "/files/bulk-download", r.URL.Path)
+		assert.Equal(t, "Bearer test-token", r.Header.Get("Authorization"))
+		assert.Equal(t, "multipart/form-data", r.Header.Get("Accept"))
+		assert.Contains(t, r.Header.Get("Content-Type"), "application/json")
+
+		var reqBody struct {
+			Paths []string `json:"paths"`
+		}
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&reqBody))
+		assert.Equal(t, []string{remotePath}, reqBody.Paths)
+
+		mw := multipart.NewWriter(w)
+		w.Header().Set("Content-Type", mw.FormDataContentType())
+		part, err := mw.CreateFormFile("file", remotePath)
+		require.NoError(t, err)
+		_, err = part.Write([]byte("streamed file content"))
+		require.NoError(t, err)
+		require.NoError(t, mw.Close())
+	}))
+	defer server.Close()
+
+	client := createTestToolboxClient(server)
+	client.GetConfig().AddDefaultHeader("Authorization", "Bearer test-token")
+	fs := NewFileSystemService(client, nil)
+
+	stream, err := fs.DownloadFileStream(context.Background(), remotePath)
+	require.NoError(t, err)
+	defer stream.Close()
+
+	data, err := io.ReadAll(stream)
+	require.NoError(t, err)
+	assert.Equal(t, "streamed file content", string(data))
+}
+
+func TestDownloadFileStreamError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mw := multipart.NewWriter(w)
+		w.Header().Set("Content-Type", mw.FormDataContentType())
+		part, err := mw.CreatePart(textproto.MIMEHeader{
+			"Content-Disposition": {`form-data; name="error"`},
+			"Content-Type":        {"application/json"},
+		})
+		require.NoError(t, err)
+		require.NoError(t, json.NewEncoder(part).Encode(map[string]any{
+			"message":    "download failed",
+			"statusCode": http.StatusInternalServerError,
+			"code":       "DOWNLOAD_FAILED",
+		}))
+		require.NoError(t, mw.Close())
+	}))
+	defer server.Close()
+
+	fs := NewFileSystemService(createTestToolboxClient(server), nil)
+	stream, err := fs.DownloadFileStream(context.Background(), "/home/user/file.txt")
+	require.Nil(t, stream)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "download failed")
+}
+
+func TestDownloadFileStreamNotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mw := multipart.NewWriter(w)
+		w.Header().Set("Content-Type", mw.FormDataContentType())
+		part, err := mw.CreatePart(textproto.MIMEHeader{
+			"Content-Disposition": {`form-data; name="error"`},
+			"Content-Type":        {"application/json"},
+		})
+		require.NoError(t, err)
+		require.NoError(t, json.NewEncoder(part).Encode(map[string]any{
+			"message":    "file not found",
+			"statusCode": http.StatusNotFound,
+			"code":       "FILE_NOT_FOUND",
+		}))
+		require.NoError(t, mw.Close())
+	}))
+	defer server.Close()
+
+	fs := NewFileSystemService(createTestToolboxClient(server), nil)
+	stream, err := fs.DownloadFileStream(context.Background(), "/home/user/missing.txt")
+	require.Nil(t, stream)
+	require.Error(t, err)
+
+	var notFoundErr *sdkerrors.DaytonaNotFoundError
+	assert.ErrorAs(t, err, &notFoundErr)
+	assert.Contains(t, err.Error(), "file not found")
 }
 
 func TestMoveFiles(t *testing.T) {

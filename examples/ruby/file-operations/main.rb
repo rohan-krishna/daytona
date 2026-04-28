@@ -63,6 +63,12 @@ file = sandbox.fs.download_file(File.join(project_files, 'example.txt'))
 puts "Content of example.txt: #{file.open.read}"
 puts "Size of the downloaded file: #{file.size} bytes"
 
+# Stream download — pipes file content without buffering in memory
+puts "\nStreaming download example:"
+chunks = []
+sandbox.fs.download_file_stream(File.join(project_files, 'config.json')) { |chunk| chunks << chunk }
+puts "Streamed content: #{chunks.join}"
+
 # Cleanup
 File.delete('local-config.json') if File.exist?('local-config.json')
 File.delete('example.txt') if File.exist?('example.txt')

@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -252,6 +253,16 @@ class E2ETest {
         assertThat(sandbox.getFs().listFiles(fsDir + "/parent")).extracting(io.daytona.sdk.model.FileInfo::getName).contains("child");
         assertThat(new String(sandbox.getFs().downloadFile(fsDir + "/parent/child/nested.txt"), StandardCharsets.UTF_8))
                 .isEqualTo("nested-content");
+    }
+
+    @Test
+    @Order(13)
+    void fileSystemDownloadFileStreamWorks() throws Exception {
+        sandbox.getFs().uploadFile("stream content".getBytes(StandardCharsets.UTF_8), fsDir + "/stream.txt");
+
+        try (InputStream stream = sandbox.getFs().downloadFileStream(fsDir + "/stream.txt")) {
+            assertThat(new String(stream.readAllBytes(), StandardCharsets.UTF_8)).isEqualTo("stream content");
+        }
     }
 
     @Test

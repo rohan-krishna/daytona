@@ -22,6 +22,7 @@ from daytona import (
     Resources,
     SessionExecuteRequest,
 )
+from daytona.common.errors import DaytonaError
 
 if not os.getenv("DAYTONA_API_KEY"):
     raise RuntimeError("DAYTONA_API_KEY environment variable is required for E2E tests")
@@ -222,6 +223,21 @@ def test_download_files_batch(sandbox):
     assert len(results) == 2, f"Expected 2 results, got {len(results)}"
     assert results[0].result == b"file one"
     assert results[1].result == b"file two"
+
+
+def test_download_file_stream_returns_exact_content(sandbox):
+    expected = b"streamed content\nsecond line\n"
+    path = f"{FS_TEST_DIR}/streamed.txt"
+    sandbox.fs.upload_file(expected, path)
+
+    content = b"".join(sandbox.fs.download_file_stream(path))
+
+    assert content == expected
+
+
+def test_download_file_stream_nonexistent_file_raises(sandbox):
+    with pytest.raises(DaytonaError):
+        b"".join(sandbox.fs.download_file_stream(f"{FS_TEST_DIR}/stream-does-not-exist.txt"))
 
 
 def test_find_files_finds_text_content(sandbox):
@@ -592,6 +608,7 @@ def test_lsp_did_open(sandbox):
 
 
 def test_lsp_document_symbols(sandbox):
+    assert lsp_server is not None, "LSP server should be started first"
     symbols = lsp_server.document_symbols(LSP_FILE_PATH)
     assert len(symbols) > 0, "Expected document symbols"
     names = [symbol.name for symbol in symbols]
@@ -599,17 +616,20 @@ def test_lsp_document_symbols(sandbox):
 
 
 def test_lsp_workspace_symbols(sandbox):
+    assert lsp_server is not None, "LSP server should be started first"
     symbols = lsp_server.sandbox_symbols("Greeter")
     assert len(symbols) > 0, "Expected workspace symbols"
 
 
 def test_lsp_did_close(sandbox):
+    assert lsp_server is not None, "LSP server should be started first"
     lsp_server.did_close(LSP_FILE_PATH)
 
 
 def test_lsp_stop_server(sandbox):
     global lsp_server
 
+    assert lsp_server is not None, "LSP server should be started first"
     lsp_server.stop()
     lsp_server = None
 

@@ -241,6 +241,43 @@ func (f *FileSystemService) DownloadFile(ctx context.Context, remotePath string,
 	})
 }
 
+// DownloadFileStream downloads a single file from the sandbox as a stream without
+// buffering the entire file into memory. The returned [io.ReadCloser] can be piped
+// directly to an HTTP response, written to a file, or processed on the fly.
+//
+// The caller must close the returned [io.ReadCloser] when done.
+//
+// Parameters:
+//   - remotePath: Path to the file in the sandbox. Relative paths are resolved based
+//     on the sandbox working directory.
+//
+// Returns an [io.ReadCloser] streaming the file content.
+//
+// Example:
+//
+//	// Stream to an HTTP response
+//	stream, err := sandbox.FileSystem.DownloadFileStream(ctx, "workspace/report.pdf")
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	defer stream.Close()
+//	io.Copy(w, stream) // w is an http.ResponseWriter
+//
+//	// Stream to a local file
+//	stream, err := sandbox.FileSystem.DownloadFileStream(ctx, "workspace/large-file.bin")
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	defer stream.Close()
+//	out, _ := os.Create("local-copy.bin")
+//	defer out.Close()
+//	io.Copy(out, stream)
+func (f *FileSystemService) DownloadFileStream(ctx context.Context, remotePath string) (io.ReadCloser, error) {
+	return withInstrumentation(ctx, f.otel, "FileSystem", "DownloadFileStream", func(ctx context.Context) (io.ReadCloser, error) {
+		return streamDownloadFile(f.toolboxClient.GetConfig(), remotePath, ctx)
+	})
+}
+
 // UploadFile uploads a file to the sandbox.
 //
 // Parameters:

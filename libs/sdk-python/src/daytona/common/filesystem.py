@@ -84,6 +84,25 @@ def create_file_download_error(response: FileDownloadResponse) -> DaytonaError:
     )
 
 
+def raise_if_stream_error(
+    remote_path: str,
+    error_text: str | None,
+    error_details: FileDownloadErrorDetails | None,
+    received_file_data: bool,
+) -> None:
+    """Raise the appropriate error after streaming a single-file multipart download."""
+    if error_text is not None:
+        raise create_file_download_error(
+            FileDownloadResponse(
+                source=remote_path,
+                error=error_text,
+                error_details=error_details,
+            )
+        )
+    if not received_file_data:
+        raise DaytonaError(f"No file data received for: {remote_path}")
+
+
 def parse_file_download_error_payload(
     payload: bytes,
     content_type: str | None,

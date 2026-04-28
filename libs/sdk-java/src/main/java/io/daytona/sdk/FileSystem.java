@@ -9,11 +9,12 @@ import io.daytona.toolbox.client.model.ReplaceRequest;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 /**
  * File system operations facade for a specific Sandbox.
@@ -68,6 +69,36 @@ public class FileSystem {
         } catch (IOException e) {
             throw new io.daytona.sdk.exception.DaytonaException("Failed to read downloaded file", e);
         }
+    }
+
+    /**
+     * Downloads a single file from the Sandbox as a stream without buffering the entire file
+     * into memory. The returned {@link InputStream} can be piped directly to an HTTP response,
+     * written to a file, or processed on the fly.
+     *
+     * <p>The caller is responsible for closing the returned stream.
+     *
+     * @param remotePath source file path in the Sandbox
+     * @return an {@link InputStream} streaming the file content
+     * @throws io.daytona.sdk.exception.DaytonaException if the file does not exist or access is denied
+     */
+    public InputStream downloadFileStream(String remotePath) throws io.daytona.sdk.exception.DaytonaException {
+        return downloadFileStream(remotePath, FileTransfer.DEFAULT_DOWNLOAD_STREAM_TIMEOUT_SECONDS);
+    }
+
+    /**
+     * Downloads a single file from the Sandbox as a stream without buffering the entire file
+     * into memory, with a custom timeout.
+     *
+     * <p>The caller is responsible for closing the returned stream.
+     *
+     * @param remotePath source file path in the Sandbox
+     * @param timeoutSeconds timeout in seconds; 0 means no timeout
+     * @return an {@link InputStream} streaming the file content
+     * @throws io.daytona.sdk.exception.DaytonaException if the file does not exist or access is denied
+     */
+    public InputStream downloadFileStream(String remotePath, int timeoutSeconds) throws io.daytona.sdk.exception.DaytonaException {
+        return FileTransfer.streamDownload(fileSystemApi, remotePath, timeoutSeconds);
     }
 
     /**

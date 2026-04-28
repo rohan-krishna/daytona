@@ -4,8 +4,50 @@
 # frozen_string_literal: true
 
 RSpec.describe Daytona::FileSystem do
+  def multipart_response(parts, boundary: 'DAYTONA-FILE-BOUNDARY')
+    body = String.new.b
+
+    parts.each do |part|
+      body << "--#{boundary}\r\n"
+      body << %(Content-Disposition: form-data; name="#{part.fetch(:name)}")
+      body << %(; filename="#{part[:filename]}") if part[:filename]
+      body << "\r\n"
+      body << "Content-Type: #{part.fetch(:content_type, 'application/octet-stream')}\r\n\r\n"
+      body << part.fetch(:body)
+      body << "\r\n"
+    end
+
+    body << "--#{boundary}--\r\n"
+  end
+
+  def stub_streaming_request(chunks:, headers: { 'Content-Type' => 'multipart/form-data; boundary=DAYTONA-FILE-BOUNDARY' },
+                             success: true, code: 200, body: nil)
+    request = instance_double(Typhoeus::Request)
+    callbacks = {}
+
+    allow(Typhoeus::Request).to receive(:new).and_return(request)
+    allow(request).to receive(:on_headers) { |&block| callbacks[:headers] = block }
+    allow(request).to receive(:on_body) { |&block| callbacks[:body] = block }
+    allow(request).to receive(:on_complete) { |&block| callbacks[:complete] = block }
+    allow(request).to receive(:run) do
+      callbacks[:headers]&.call(double('headers_response', headers: headers))
+      chunks.each { |chunk| callbacks[:body]&.call(chunk) }
+      callbacks[:complete]&.call(double('complete_response', success?: success, code: code, body: body))
+    end
+
+    request
+  end
+
   let(:toolbox_api) { instance_double(DaytonaToolboxApiClient::FileSystemApi) }
+  let(:toolbox_api_config) { double('ToolboxConfig', base_url: 'https://toolbox.example.com', verify_ssl: true, verify_ssl_host: true) }
+  let(:toolbox_api_client) do
+    double('ToolboxApiClient', config: toolbox_api_config, default_headers: { 'Authorization' => 'Bearer token' })
+  end
   let(:fs) { described_class.new(sandbox_id: 'sandbox-123', toolbox_api: toolbox_api) }
+
+  before do
+    allow(toolbox_api).to receive(:api_client).and_return(toolbox_api_client)
+  end
 
   describe '#create_folder' do
     it 'delegates to toolbox_api' do
@@ -103,6 +145,57 @@ RSpec.describe Daytona::FileSystem do
       allow(toolbox_api).to receive(:download_file).and_raise(StandardError, 'err')
 
       expect { fs.download_file('/x') }.to raise_error(Daytona::Sdk::Error, /Failed to download file: err/)
+    end
+  end
+
+  describe '#download_file_stream' do
+    it 'yields file content chunks when block given' do
+      body = multipart_response([
+                                  { name: 'file', filename: 'remote.txt', body: 'stream test content' }
+                                ])
+      stub_streaming_request(chunks: [body.byteslice(0, 96), body.byteslice(96, 8),
+                                      body.byteslice(104, body.bytesize - 104)])
+
+      chunks = []
+      fs.download_file_stream('/remote.txt', timeout: 45) { |chunk| chunks << chunk }
+
+      expect(chunks.join).to eq('stream test content')
+      expect(Typhoeus::Request).to have_received(:new).with(
+        'https://toolbox.example.com/files/bulk-download',
+        hash_including(
+          method: :post,
+          timeout: 45_000,
+          body: '{"paths":["/remote.txt"]}',
+          headers: hash_including(
+            'Authorization' => 'Bearer token',
+            'Accept' => 'multipart/form-data',
+            'Content-Type' => 'application/json'
+          )
+        )
+      )
+    end
+
+    it 'returns enumerator when no block given' do
+      body = multipart_response([
+                                  { name: 'file', filename: 'remote.txt', body: 'enumerated content' }
+                                ])
+      stub_streaming_request(chunks: [body.byteslice(0, 70), body.byteslice(70, body.bytesize - 70)])
+
+      enumerator = fs.download_file_stream('/remote.txt')
+
+      expect(enumerator).to be_a(Enumerator)
+      expect(enumerator.to_a.join).to eq('enumerated content')
+    end
+
+    it 'raises error when file not found' do
+      body = multipart_response([
+                                  { name: 'error', content_type: 'application/json',
+                                    body: '{"message":"file not found"}' }
+                                ])
+      stub_streaming_request(chunks: [body.byteslice(0, 82), body.byteslice(82, body.bytesize - 82)])
+
+      expect { fs.download_file_stream('/missing.txt') { |_chunk| nil } }
+        .to raise_error(Daytona::Sdk::Error, /Failed to download file: file not found/)
     end
   end
 

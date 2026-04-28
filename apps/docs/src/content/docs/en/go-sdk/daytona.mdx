@@ -131,6 +131,7 @@ result, err := sandbox.Process.ExecuteCommand(ctx, "ls -la")
   - [func \(f \*FileSystemService\) CreateFolder\(ctx context.Context, path string, opts ...func\(\*options.CreateFolder\)\) error](<#FileSystemService.CreateFolder>)
   - [func \(f \*FileSystemService\) DeleteFile\(ctx context.Context, path string, recursive bool\) error](<#FileSystemService.DeleteFile>)
   - [func \(f \*FileSystemService\) DownloadFile\(ctx context.Context, remotePath string, localPath \*string\) \(\[\]byte, error\)](<#FileSystemService.DownloadFile>)
+  - [func \(f \*FileSystemService\) DownloadFileStream\(ctx context.Context, remotePath string\) \(io.ReadCloser, error\)](<#FileSystemService.DownloadFileStream>)
   - [func \(f \*FileSystemService\) FindFiles\(ctx context.Context, path, pattern string\) \(any, error\)](<#FileSystemService.FindFiles>)
   - [func \(f \*FileSystemService\) GetFileInfo\(ctx context.Context, path string\) \(\*types.FileInfo, error\)](<#FileSystemService.GetFileInfo>)
   - [func \(f \*FileSystemService\) ListFiles\(ctx context.Context, path string\) \(\[\]\*types.FileInfo, error\)](<#FileSystemService.ListFiles>)
@@ -1412,6 +1413,45 @@ data, err := sandbox.FileSystem.DownloadFile(ctx, "/home/user/file.txt", &localP
 ```
 
 Returns an error if the file doesn't exist or cannot be read.
+
+<a name="FileSystemService.DownloadFileStream"></a>
+### func \(\*FileSystemService\) DownloadFileStream
+
+```go
+func (f *FileSystemService) DownloadFileStream(ctx context.Context, remotePath string) (io.ReadCloser, error)
+```
+
+DownloadFileStream downloads a single file from the sandbox as a stream without buffering the entire file into memory. The returned [io.ReadCloser](<https://pkg.go.dev/io/#ReadCloser>) can be piped directly to an HTTP response, written to a file, or processed on the fly.
+
+The caller must close the returned [io.ReadCloser](<https://pkg.go.dev/io/#ReadCloser>) when done.
+
+Parameters:
+
+- remotePath: Path to the file in the sandbox. Relative paths are resolved based on the sandbox working directory.
+
+Returns an [io.ReadCloser](<https://pkg.go.dev/io/#ReadCloser>) streaming the file content.
+
+Example:
+
+```
+// Stream to an HTTP response
+stream, err := sandbox.FileSystem.DownloadFileStream(ctx, "workspace/report.pdf")
+if err != nil {
+    log.Fatal(err)
+}
+defer stream.Close()
+io.Copy(w, stream) // w is an http.ResponseWriter
+
+// Stream to a local file
+stream, err := sandbox.FileSystem.DownloadFileStream(ctx, "workspace/large-file.bin")
+if err != nil {
+    log.Fatal(err)
+}
+defer stream.Close()
+out, _ := os.Create("local-copy.bin")
+defer out.Close()
+io.Copy(out, stream)
+```
 
 <a name="FileSystemService.FindFiles"></a>
 ### func \(\*FileSystemService\) FindFiles

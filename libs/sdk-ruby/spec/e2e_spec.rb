@@ -214,6 +214,15 @@ RSpec.describe 'Daytona SDK E2E', :e2e do
       expect(content).to include('hello world')
     end
 
+    it 'streams file download' do
+      @sandbox.fs.upload_file('stream test content'.b, "#{@fs_dir}/stream.txt")
+
+      chunks = []
+      @sandbox.fs.download_file_stream("#{@fs_dir}/stream.txt") { |chunk| chunks << chunk }
+
+      expect(chunks.join).to eq('stream test content')
+    end
+
     it 'finds text content in files' do
       matches = @sandbox.fs.find_files(@fs_dir, 'hello')
       expect(matches).not_to be_nil

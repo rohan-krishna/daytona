@@ -11,6 +11,8 @@ import io.daytona.sdk.exception.DaytonaNotFoundException;
 import io.daytona.sdk.exception.DaytonaRateLimitException;
 import io.daytona.sdk.exception.DaytonaServerException;
 import io.daytona.sdk.model.FileInfo;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import io.daytona.toolbox.client.api.FileSystemApi;
 import io.daytona.toolbox.client.model.Match;
 import io.daytona.toolbox.client.model.ReplaceRequest;
@@ -26,7 +28,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
@@ -128,6 +132,59 @@ class FileSystemTest {
         when(fileSystemApi.downloadFile("/missing.txt")).thenReturn(null);
 
         assertThat(fileSystem.downloadFile("/missing.txt")).isEmpty();
+    }
+
+    @Test
+    void downloadFileStreamReturnsInputStream() throws Exception {
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setHeader("Content-Type", "multipart/form-data; boundary=DAYTONA-FILE-BOUNDARY")
+                    .setBody("--DAYTONA-FILE-BOUNDARY\r\n"
+                            + "Content-Disposition: form-data; name=\"file\"; filename=\"remote.txt\"\r\n"
+                            + "Content-Type: application/octet-stream\r\n"
+                            + "\r\n"
+                            + "streamed-content\r\n"
+                            + "--DAYTONA-FILE-BOUNDARY--\r\n"));
+
+            io.daytona.toolbox.client.ApiClient apiClient = new io.daytona.toolbox.client.ApiClient();
+            apiClient.setBasePath(server.url("/").toString());
+            apiClient.addDefaultHeader("Authorization", "Bearer secret");
+            FileSystem streamingFileSystem = new FileSystem(new FileSystemApi(apiClient));
+
+            try (InputStream stream = streamingFileSystem.downloadFileStream("/remote.txt", 45)) {
+                assertThat(new String(stream.readAllBytes(), StandardCharsets.UTF_8)).isEqualTo("streamed-content");
+            }
+
+            okhttp3.mockwebserver.RecordedRequest request = server.takeRequest();
+            assertThat(request.getMethod()).isEqualTo("POST");
+            assertThat(request.getPath()).isEqualTo("/files/bulk-download");
+            assertThat(request.getHeader("Authorization")).isEqualTo("Bearer secret");
+            assertThat(request.getHeader("Accept")).isEqualTo("multipart/form-data");
+            assertThat(request.getHeader("Content-Type")).startsWith("application/json");
+            assertThat(request.getBody().readUtf8()).isEqualTo("{\"paths\":[\"/remote.txt\"]}");
+        }
+    }
+
+    @Test
+    void downloadFileStreamThrowsOnErrorPart() throws Exception {
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setHeader("Content-Type", "multipart/form-data; boundary=DAYTONA-FILE-BOUNDARY")
+                    .setBody("--DAYTONA-FILE-BOUNDARY\r\n"
+                            + "Content-Disposition: form-data; name=\"error\"\r\n"
+                            + "Content-Type: application/json\r\n"
+                            + "\r\n"
+                            + "{\"message\":\"missing file\",\"statusCode\":404,\"code\":\"NotFound\"}\r\n"
+                            + "--DAYTONA-FILE-BOUNDARY--\r\n"));
+
+            io.daytona.toolbox.client.ApiClient apiClient = new io.daytona.toolbox.client.ApiClient();
+            apiClient.setBasePath(server.url("/").toString());
+            FileSystem streamingFileSystem = new FileSystem(new FileSystemApi(apiClient));
+
+            assertThatThrownBy(() -> streamingFileSystem.downloadFileStream("/missing.txt"))
+                    .isInstanceOf(DaytonaNotFoundException.class)
+                    .hasMessage("missing file");
+        }
     }
 
     @Test

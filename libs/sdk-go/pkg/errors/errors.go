@@ -83,6 +83,46 @@ func NewDaytonaTimeoutError(message string) *DaytonaTimeoutError {
 	}
 }
 
+// NewDaytonaErrorFromBody parses a JSON response body and maps the status code
+// to the appropriate SDK error type. Falls back to the raw body as the message.
+func NewDaytonaErrorFromBody(body []byte, statusCode int, headers http.Header) error {
+	var message string
+
+	if len(body) > 0 {
+		var errResp struct {
+			Message    string `json:"message"`
+			Error      string `json:"error"`
+			StatusCode int    `json:"statusCode"`
+		}
+		if json.Unmarshal(body, &errResp) == nil {
+			if errResp.Message != "" {
+				message = errResp.Message
+			} else if errResp.Error != "" {
+				message = errResp.Error
+			}
+			if errResp.StatusCode != 0 {
+				statusCode = errResp.StatusCode
+			}
+		}
+		if message == "" {
+			message = string(body)
+		}
+	}
+
+	if message == "" {
+		message = "Download failed"
+	}
+
+	switch statusCode {
+	case http.StatusNotFound:
+		return NewDaytonaNotFoundError(message, headers)
+	case http.StatusTooManyRequests:
+		return NewDaytonaRateLimitError(message, headers)
+	default:
+		return NewDaytonaError(message, statusCode, headers)
+	}
+}
+
 // ConvertAPIError converts api-client-go errors to SDK error types
 func ConvertAPIError(err error, httpResp *http.Response) error {
 	if err == nil {

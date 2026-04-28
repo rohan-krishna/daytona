@@ -52,7 +52,7 @@ final class ExceptionMapper {
         }
     }
 
-    private static DaytonaException map(int statusCode, String responseBody) {
+    static DaytonaException map(int statusCode, String responseBody) {
         String message = extractMessage(responseBody, statusCode);
         switch (statusCode) {
             case 400:

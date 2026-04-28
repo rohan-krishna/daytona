@@ -33,6 +33,15 @@ public class FileOperations {
                 byte[] downloaded = sandbox.getFs().downloadFile("test-dir/hello.txt");
                 System.out.println("Content: " + new String(downloaded, StandardCharsets.UTF_8));
 
+                // Stream download — pipes file content without buffering in memory
+                System.out.println("Streaming download hello.txt");
+                try (java.io.InputStream stream = sandbox.getFs().downloadFileStream("test-dir/hello.txt")) {
+                    byte[] streamed = stream.readAllBytes();
+                    System.out.println("Streamed content: " + new String(streamed, StandardCharsets.UTF_8));
+                } catch (java.io.IOException e) {
+                    System.err.println("Stream download failed: " + e.getMessage());
+                }
+
                 System.out.println("Uploading config.json and replacing 'true' with 'false'");
                 String originalConfig = "{\"debug\": true, \"name\": \"demo\"}";
                 sandbox.getFs().uploadFile(originalConfig.getBytes(StandardCharsets.UTF_8), "test-dir/config.json");

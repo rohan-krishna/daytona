@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"time"
 
@@ -64,6 +65,18 @@ func main() {
 		log.Fatalf("Failed to download file: %v", err)
 	}
 	log.Printf("✓ Downloaded file content: %s\n", string(downloadedContent))
+
+	// Stream download — pipes file content without buffering in memory
+	stream, err := sandbox.FileSystem.DownloadFileStream(ctx, testPath)
+	if err != nil {
+		log.Fatalf("Failed to stream download file: %v", err)
+	}
+	streamedContent, err := io.ReadAll(stream)
+	stream.Close()
+	if err != nil {
+		log.Fatalf("Failed to read stream: %v", err)
+	}
+	log.Printf("✓ Streamed file content: %s\n", string(streamedContent))
 
 	// Create a folder
 	folderPath := "/tmp/test-folder"

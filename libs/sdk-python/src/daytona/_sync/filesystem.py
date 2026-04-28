@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import io
 import os
+from collections.abc import Iterator
 from contextlib import ExitStack
 from typing import overload
 
@@ -24,6 +25,7 @@ from daytona_toolbox_api_client import (
 from .._utils.errors import intercept_errors
 from .._utils.otel_decorator import with_instrumentation
 from ..common.errors import DaytonaError
+from ..common.file_transfer import create_multipart_parser, parse_content_type_boundary, serialize_download_request
 from ..common.filesystem import (
     FileDownloadErrorDetails,
     FileDownloadRequest,
@@ -31,6 +33,7 @@ from ..common.filesystem import (
     FileUpload,
     create_file_download_error,
     parse_file_download_error_payload,
+    raise_if_stream_error,
 )
 
 
@@ -164,6 +167,146 @@ class FileSystem:
         if response.error:
             raise create_file_download_error(response)
         return None
+
+    @intercept_errors(message_prefix="Failed to download file: ")
+    @with_instrumentation()
+    def download_file_stream(self, remote_path: str, timeout: int = 30 * 60) -> Iterator[bytes]:
+        """Downloads a single file from the Sandbox as a stream without buffering the entire file
+        into memory. Returns an iterator that yields file content in chunks, which can be piped
+        directly to an HTTP response, written to a file incrementally, or processed on the fly.
+
+        Args:
+            remote_path (str): Path to the file in the Sandbox. Relative paths are resolved based
+                on the sandbox working directory.
+            timeout (int): Timeout for the download operation in seconds. 0 means no timeout.
+                Default is 30 minutes.
+
+        Returns:
+            Iterator[bytes]: An iterator yielding chunks of file content as bytes.
+
+        Raises:
+            DaytonaError: If the file does not exist or access is denied.
+
+        Example:
+            ```python
+            # Stream to a local file without loading into memory
+            with open("local_copy.bin", "wb") as f:
+                for chunk in sandbox.fs.download_file_stream("workspace/large-file.bin"):
+                    f.write(chunk)
+
+            # Stream to an HTTP response (Flask)
+            return Response(sandbox.fs.download_file_stream("workspace/report.pdf"),
+                            mimetype="application/pdf")
+            ```
+        """
+
+        def stream_generator() -> Iterator[bytes]:
+            method, url, headers, body = serialize_download_request(self._api_client, remote_path)
+
+            mode: str | None = None
+            part_content_type: str | None = None
+            source: str | None = None
+            header_field = bytearray()
+            header_value = bytearray()
+            part_headers: dict[str, str] = {}
+            error_buffer = bytearray()
+            file_chunks: list[bytes] = []
+            error_text: str | None = None
+            error_details: FileDownloadErrorDetails | None = None
+            received_file_data = False
+
+            def on_part_begin() -> None:
+                part_headers.clear()
+                header_field.clear()
+                header_value.clear()
+                error_buffer.clear()
+
+            def on_header_field(data: bytes, start: int, end: int) -> None:
+                header_field.extend(data[start:end])
+
+            def on_header_value(data: bytes, start: int, end: int) -> None:
+                header_value.extend(data[start:end])
+
+            def on_header_end() -> None:
+                field = bytes(header_field).decode("utf-8", errors="ignore").lower()
+                value = bytes(header_value).decode("utf-8", errors="ignore")
+                part_headers[field] = value
+                header_field.clear()
+                header_value.clear()
+
+            def on_headers_finished() -> None:
+                nonlocal mode, part_content_type, source
+                cd = part_headers.get("content-disposition", "")
+                _, cd_params = parse_options_header(cd)
+                name = cd_params.get(b"name", b"").decode("utf-8", errors="ignore")
+                source = cd_params.get(b"filename", b"").decode("utf-8", errors="ignore") or None
+                if not source:
+                    raise DaytonaError("No source path found for this file")
+                part_content_type = part_headers.get("content-type")
+
+                if name == "error":
+                    mode = "error"
+                elif name == "file":
+                    mode = "file"
+
+            def on_part_data(data: bytes, start: int, end: int) -> None:
+                part_data = data[start:end]
+                if mode == "error":
+                    error_buffer.extend(part_data)
+                elif mode == "file":
+                    file_chunks.append(part_data)
+
+            def on_part_end() -> None:
+                nonlocal mode, part_content_type, source, error_text, error_details
+                if mode == "error" and error_buffer:
+                    error_text, error_details = parse_file_download_error_payload(
+                        bytes(error_buffer),
+                        part_content_type,
+                    )
+                    error_buffer.clear()
+                mode = None
+                part_content_type = None
+                source = None
+
+            with httpx.Client(timeout=timeout) as client:
+                with client.stream(
+                    method,
+                    url,
+                    json=body,
+                    headers=headers,
+                ) as resp:
+                    _ = resp.raise_for_status()
+
+                    boundary = parse_content_type_boundary(resp.headers)
+                    parser = create_multipart_parser(
+                        boundary,
+                        on_part_begin,
+                        on_header_field,
+                        on_header_value,
+                        on_header_end,
+                        on_headers_finished,
+                        on_part_data,
+                        on_part_end,
+                    )
+
+                    for chunk in resp.iter_bytes(64 * 1024):
+                        _ = parser.write(chunk)
+                        if file_chunks:
+                            emitted_chunks = file_chunks.copy()
+                            file_chunks.clear()
+                            received_file_data = True
+                            yield from emitted_chunks
+
+                    parser.finalize()
+                    if file_chunks:
+                        emitted_chunks = file_chunks.copy()
+                        file_chunks.clear()
+                        received_file_data = True
+                        yield from emitted_chunks
+
+            raise_if_stream_error(remote_path, error_text, error_details, received_file_data)
+
+        return stream_generator()
 
     @intercept_errors(message_prefix="Failed to download files: ")
     @with_instrumentation()
