@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-import threading
 import functools
+import threading
 from typing import Any, Callable, TypeVar
 
 from deprecated import deprecated
