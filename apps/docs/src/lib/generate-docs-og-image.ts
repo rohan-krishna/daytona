@@ -6,6 +6,8 @@ import satori from 'satori'
 
 const WIDTH = 1248
 const HEIGHT = 628
+/** Fixed width so multi-line title height is laid out correctly under Satori/Yoga. */
+const CONTENT_MAX_WIDTH = 920
 
 function resolvePublicFile(relativePath: string): string {
   const cwd = process.cwd()
@@ -101,17 +103,18 @@ export async function generateDocsOgImagePng(options: {
         style: {
           position: 'absolute',
           left: 80,
-          bottom: 80,
-          maxWidth: 920,
+          bottom: 100,
+          width: CONTENT_MAX_WIDTH,
           display: 'flex',
           flexDirection: 'column',
-          gap: 16,
+          alignItems: 'stretch',
         },
       },
       React.createElement(
         'div',
         {
           style: {
+            width: '100%',
             fontSize: title.length > 72 ? 40 : 48,
             fontWeight: 600,
             color: '#fafafa',
@@ -127,6 +130,8 @@ export async function generateDocsOgImagePng(options: {
         'div',
         {
           style: {
+            marginTop: 16,
+            width: '100%',
             fontSize: 24,
             fontWeight: 400,
             color: '#e4e4e7',
