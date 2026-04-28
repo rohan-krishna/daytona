@@ -22,29 +22,13 @@ function filterProxyHeaders(headers: Headers): Headers {
   return filteredHeaders
 }
 
-/** Merge `Accept` into `Vary` so caches do not serve HTML for markdown requests or vice versa. */
-function withVaryAccept(response: Response): Response {
-  const headers = new Headers(response.headers)
-  const existing = headers.get('Vary')
-  if (existing) {
-    const parts = existing.split(',').map(s => s.trim().toLowerCase())
-    if (!parts.includes('accept')) {
-      headers.set('Vary', `${existing}, Accept`)
-    }
-  } else {
-    headers.set('Vary', 'Accept')
-  }
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  })
-}
-
 export const onRequest = defineMiddleware(
   async ({ request, redirect }, next) => {
     const url = new URL(request.url)
     const path = url.pathname.replace(/\/$/, '')
+    const markdownFormat = preferredMarkdownPlainFormat(
+      request.headers.get('accept')
+    )
 
     const proxyRequest = async (targetUrl: URL): Promise<Response> => {
       try {
@@ -71,6 +55,24 @@ export const onRequest = defineMiddleware(
       return next(new Request(new URL('/docs/sitemap-index.xml', url), request))
     }
 
+    if (markdownFormat && shouldTryMarkdownPath(url.pathname)) {
+      const parsed = parseDocsContentPath(url.pathname)
+      if (parsed) {
+        const markdownBody = await loadDocsMarkdownBody(parsed)
+        if (markdownBody !== null) {
+          return new Response(markdownBody, {
+            status: 200,
+            headers: {
+              'content-type':
+                markdownFormat === 'markdown'
+                  ? 'text/markdown; charset=utf-8'
+                  : 'text/plain; charset=utf-8',
+            },
+          })
+        }
+      }
+    }
+
     // Match /docs/old-slug or /docs/{locale}/old-slug
     const match = path.match(/^\/docs(?:\/([a-z]{2}))?\/(.+)$/)
     if (match) {
@@ -85,47 +87,26 @@ export const onRequest = defineMiddleware(
       }
     }
 
-    const textFormat = preferredMarkdownPlainFormat(
-      request.headers.get('accept')
-    )
-    if (
-      textFormat &&
-      (request.method === 'GET' || request.method === 'HEAD') &&
-      shouldTryMarkdownPath(url.pathname)
-    ) {
-      const parsed = parseDocsContentPath(url.pathname)
-      if (parsed) {
-        const body = await loadDocsMarkdownBody(parsed)
-        if (body !== null) {
-          const contentType =
-            textFormat === 'plain'
-              ? 'text/plain; charset=utf-8'
-              : 'text/markdown; charset=utf-8'
-          const headers = {
-            'Content-Type': contentType,
-            'Cache-Control': 'public, max-age=300',
-            Vary: 'Accept',
-          } as const
-          if (request.method === 'HEAD') {
-            return new Response(null, { status: 200, headers })
-          }
-          return new Response(body, {
-            status: 200,
-            headers,
-          })
-        }
+    if (path === '/docs') {
+      const targetUrl = new URL('/docs/en', url)
+      targetUrl.search = url.search
+      return await proxyRequest(targetUrl)
+    }
+
+    const docsPath = path.match(/^\/docs\/(.+)$/)
+    if (docsPath) {
+      const slug = docsPath[1]
+      const firstSegment = slug.split('/')[0]
+      const isLocalePrefixed = /^[a-z]{2}$/.test(firstSegment)
+      const looksLikeStaticAsset = /\.[^/]+$/.test(slug)
+
+      if (!isLocalePrefixed && !looksLikeStaticAsset) {
+        const targetUrl = new URL(`/docs/en/${slug}`, url)
+        targetUrl.search = url.search
+        return await proxyRequest(targetUrl)
       }
     }
 
-    const isNegotiableDocsRequest =
-      (request.method === 'GET' || request.method === 'HEAD') &&
-      shouldTryMarkdownPath(url.pathname) &&
-      parseDocsContentPath(url.pathname) !== null
-
-    const response = await next()
-    if (isNegotiableDocsRequest) {
-      return withVaryAccept(response)
-    }
-    return response
+    return next()
   }
 )
