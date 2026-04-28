@@ -164,7 +164,7 @@ RSpec.describe Daytona::FileSystem do
         'https://toolbox.example.com/files/bulk-download',
         hash_including(
           method: :post,
-          timeout: 45_000,
+          timeout: 45,
           body: '{"paths":["/remote.txt"]}',
           headers: hash_including(
             'Authorization' => 'Bearer token',
