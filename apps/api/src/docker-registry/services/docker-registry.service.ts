@@ -48,12 +48,13 @@ function normalizeRegistryUrl(url: string): string {
 /**
  * For ECR registries the runner does sts:AssumeRole with role ARN in
  * `username` and orgId as ExternalId. We ship orgId through `password` so
- * the runner DTO is unchanged. Mutates in-memory; callers don't persist.
+ * the runner DTO is unchanged. Returns a shallow copy to avoid mutating the
+ * TypeORM entity instance in-place.
  */
 function injectEcrOrgIdAsPassword(registry: DockerRegistry): DockerRegistry {
   const strippedUrl = registry.url.replace(/^(https?:\/\/)/, '')
   if (ECR_HOST_REGEX.test(strippedUrl) && registry.organizationId) {
-    registry.password = registry.organizationId
+    return { ...registry, password: registry.organizationId }
   }
   return registry
 }
@@ -799,7 +800,7 @@ export class DockerRegistryService {
     // If so, include all user's registries (we can't reliably match specific registries)
     if (checkDockerfileHasRegistryPrefix(dockerfileContent)) {
       const userRegistries = await this.findAll(organizationId, RegistryType.ORGANIZATION)
-      sourceRegistries.push(...userRegistries)
+      sourceRegistries.push(...userRegistries.map(injectEcrOrgIdAsPassword))
     }
 
     // Add default Docker Hub registry only if user doesn't have their own Docker Hub credentials

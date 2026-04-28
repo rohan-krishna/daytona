@@ -73,9 +73,9 @@ func (d *DockerClient) PullImage(ctx context.Context, imageName string, reg *dto
 
 // getRegistryAuth returns a base64-encoded Docker auth header for the
 // registry. For ECR URLs the resolver performs sts:AssumeRole + ECR
-// GetAuthorizationToken on each call.
+// GetAuthorizationToken on cache miss and reuses the cached token otherwise.
 func getRegistryAuth(ctx context.Context, reg *dto.RegistryDTO) (string, error) {
-	if reg == nil || !reg.HasAuth() {
+	if !shouldResolveAuth(reg) {
 		// Sometimes registry auth fails if "" is sent, so sending "empty" instead.
 		return "empty", nil
 	}
