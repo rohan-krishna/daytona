@@ -51,10 +51,6 @@ export async function generateDocsOgImagePng(options: {
   description: string
 }): Promise<Buffer> {
   const title = clampText(options.title, 118)
-  const description = clampText(
-    options.description || 'Daytona documentation.',
-    220
-  )
 
   const fonts = [
     {
@@ -103,7 +99,7 @@ export async function generateDocsOgImagePng(options: {
         style: {
           position: 'absolute',
           left: 80,
-          bottom: 100,
+          bottom: 120,
           width: CONTENT_MAX_WIDTH,
           display: 'flex',
           flexDirection: 'column',
@@ -115,8 +111,25 @@ export async function generateDocsOgImagePng(options: {
         {
           style: {
             width: '100%',
-            fontSize: title.length > 72 ? 40 : 48,
-            fontWeight: 600,
+            fontSize: 82,
+            fontWeight: 500,
+            color: '#a1a1aa',
+            lineHeight: 1,
+            fontFamily: 'Inter',
+            letterSpacing: -1,
+            textShadow: '0 0 16px rgba(0,0,0,0.75), 0 1px 2px rgba(0,0,0,0.9)',
+          },
+        },
+        'Docs/'
+      ),
+      React.createElement(
+        'div',
+        {
+          style: {
+            marginTop: 24,
+            width: '100%',
+            fontSize: title.length > 72 ? 40 : 64,
+            fontWeight: 500,
             color: '#fafafa',
             lineHeight: 1.15,
             fontFamily: 'Inter',
@@ -125,22 +138,6 @@ export async function generateDocsOgImagePng(options: {
           },
         },
         title
-      ),
-      React.createElement(
-        'div',
-        {
-          style: {
-            marginTop: 16,
-            width: '100%',
-            fontSize: 24,
-            fontWeight: 400,
-            color: '#e4e4e7',
-            lineHeight: 1.45,
-            fontFamily: 'Inter',
-            textShadow: '0 0 16px rgba(0,0,0,0.75), 0 1px 2px rgba(0,0,0,0.9)',
-          },
-        },
-        description
       )
     )
   )
