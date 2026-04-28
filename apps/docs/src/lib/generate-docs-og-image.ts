@@ -99,7 +99,7 @@ export async function generateDocsOgImagePng(options: {
         style: {
           position: 'absolute',
           left: 80,
-          bottom: 120,
+          bottom: 100,
           width: CONTENT_MAX_WIDTH,
           display: 'flex',
           flexDirection: 'column',
