@@ -88,9 +88,10 @@ export const onRequest = defineMiddleware(
     }
 
     if (path === '/docs') {
-      const targetUrl = new URL('/docs/en', url)
+      const target = url.pathname.endsWith('/') ? '/docs/en/' : '/docs/en'
+      const targetUrl = new URL(target, url)
       targetUrl.search = url.search
-      return await proxyRequest(targetUrl)
+      return redirect(targetUrl.pathname + targetUrl.search, 302)
     }
 
     const docsPath = path.match(/^\/docs\/(.+)$/)
