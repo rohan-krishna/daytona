@@ -1,14 +1,14 @@
 ---
-import type { Props } from '@astrojs/starlight/props'
+import type { StarlightRouteData } from '@astrojs/starlight/route-data'
 import Default from '@astrojs/starlight/components/Head.astro'
 import PostHog from '@components/PostHog.astro'
 
-const props = Astro.props as Props
+const route = Astro.locals.starlightRoute as StarlightRouteData
 
 const imagePath = '/docs/opengraph.png'
 const docsOgPath =
-  typeof props.id === 'string' && props.id.length > 0
-    ? `/docs/opengraph/${props.id
+  typeof route.id === 'string' && route.id.length > 0
+    ? `/docs/opengraph/${route.id
         .split('/')
         .map(segment => encodeURIComponent(segment))
         .join('/')}`
@@ -18,29 +18,20 @@ const imageUrl = Astro.site
     ? new URL(docsOgPath, Astro.site).toString()
     : new URL(imagePath, Astro.site).toString()
   : (docsOgPath ?? imagePath)
-const pageUrl =
-  Astro.site && Astro.url?.pathname
-    ? new URL(Astro.url.pathname, Astro.site).toString()
-    : undefined
 
-const title = String(props.title ?? 'Daytona')
-const description = String(props.description ?? 'Daytona documentation.')
+const pageTitle =
+  typeof route.entry?.data?.title === 'string' && route.entry.data.title.trim()
+    ? route.entry.data.title.trim()
+    : route.siteTitle
 ---
 
-<Default {...props}><slot /></Default>
-<meta property="og:type" content="website" />
-{pageUrl && <meta property="og:url" content={pageUrl} />}
-<meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
-<meta name="twitter:title" content={title} />
-<meta name="twitter:description" content={description} />
-<meta name="twitter:card" content="summary_large_image" />
+<Default />
 <meta name="twitter:image" content={imageUrl} />
 <meta name="image" property="og:image" content={imageUrl} />
 <meta property="og:image:secure_url" content={imageUrl} />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1248" />
 <meta property="og:image:height" content="628" />
-<meta property="og:image:alt" content={`${title} | Daytona`} />
+<meta property="og:image:alt" content={`${pageTitle} | Daytona`} />
 <meta name="algolia-site-verification" content="2988B4D95ECF88B6" />
 {import.meta.env.PROD && <PostHog />}
