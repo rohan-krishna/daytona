@@ -293,6 +293,26 @@ final class FileTransfer {
         }
 
         @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            if (b == null) throw new NullPointerException();
+            if (off < 0 || len < 0 || len > b.length - off) throw new IndexOutOfBoundsException();
+            if (len == 0) return 0;
+
+            int first = read();
+            if (first == -1) return -1;
+            b[off] = (byte) first;
+
+            int i = 1;
+            while (i < len) {
+                int next = read();
+                if (next == -1) break;
+                b[off + i] = (byte) next;
+                i++;
+            }
+            return i;
+        }
+
+        @Override
         public void close() {
             if (closed) {
                 return;

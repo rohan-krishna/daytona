@@ -154,7 +154,7 @@ module Daytona
           'Content-Type' => 'application/json'
         ),
         body: JSON.generate(paths: [remote_path]),
-        timeout: timeout * 1000,
+        timeout: timeout,
         ssl_verifypeer: config.verify_ssl,
         ssl_verifyhost: config.verify_ssl_host ? 2 : 0
       )

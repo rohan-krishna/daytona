@@ -63,7 +63,7 @@ file = sandbox.fs.download_file(File.join(project_files, 'example.txt'))
 puts "Content of example.txt: #{file.open.read}"
 puts "Size of the downloaded file: #{file.size} bytes"
 
-# Stream download — pipes file content without buffering in memory
+# Stream download — process file content as chunks arrive
 puts "\nStreaming download example:"
 chunks = []
 sandbox.fs.download_file_stream(File.join(project_files, 'config.json')) { |chunk| chunks << chunk }

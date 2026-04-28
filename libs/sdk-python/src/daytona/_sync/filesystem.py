@@ -268,7 +268,8 @@ class FileSystem:
                 part_content_type = None
                 source = None
 
-            with httpx.Client(timeout=timeout) as client:
+            httpx_timeout = None if timeout == 0 else timeout
+            with httpx.Client(timeout=httpx_timeout) as client:
                 with client.stream(
                     method,
                     url,

@@ -89,7 +89,7 @@ def main():
     config_content = sandbox.fs.download_file(os.path.join(new_dir, "config.json"))
     print("Config content:", config_content.decode("utf-8"))
 
-    # Stream download — pipes file content without buffering in memory
+    # Stream download — process file content as chunks arrive
     print("\nStreaming download example:")
     streamed_chunks = list(sandbox.fs.download_file_stream(os.path.join(new_dir, "config.json")))
     print("Streamed content:", b"".join(streamed_chunks).decode("utf-8"))

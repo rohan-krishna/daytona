@@ -293,7 +293,8 @@ class AsyncFileSystem:
                         part_content_type = None
                         source = None
 
-            async with httpx.AsyncClient(timeout=timeout) as client:
+            httpx_timeout = None if timeout == 0 else timeout
+            async with httpx.AsyncClient(timeout=httpx_timeout) as client:
                 async with client.stream(
                     method,
                     url,

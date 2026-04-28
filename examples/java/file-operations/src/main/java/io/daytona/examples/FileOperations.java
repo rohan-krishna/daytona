@@ -33,7 +33,7 @@ public class FileOperations {
                 byte[] downloaded = sandbox.getFs().downloadFile("test-dir/hello.txt");
                 System.out.println("Content: " + new String(downloaded, StandardCharsets.UTF_8));
 
-                // Stream download — pipes file content without buffering in memory
+                // Stream download — process file content as chunks arrive
                 System.out.println("Streaming download hello.txt");
                 try (java.io.InputStream stream = sandbox.getFs().downloadFileStream("test-dir/hello.txt")) {
                     byte[] streamed = stream.readAllBytes();

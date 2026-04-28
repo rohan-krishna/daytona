@@ -66,7 +66,7 @@ func main() {
 	}
 	log.Printf("✓ Downloaded file content: %s\n", string(downloadedContent))
 
-	// Stream download — pipes file content without buffering in memory
+	// Stream download — process file content as chunks arrive
 	stream, err := sandbox.FileSystem.DownloadFileStream(ctx, testPath)
 	if err != nil {
 		log.Fatalf("Failed to stream download file: %v", err)
