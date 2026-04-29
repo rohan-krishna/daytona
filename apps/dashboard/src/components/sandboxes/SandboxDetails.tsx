@@ -61,6 +61,7 @@ export default function SandboxDetails() {
   const { getRegionName } = useRegions()
 
   const experimentsEnabled = useFeatureFlagEnabled(FeatureFlags.ORGANIZATION_EXPERIMENTS)
+  const filesystemEnabled = useFeatureFlagEnabled(FeatureFlags.DASHBOARD_FILESYSTEM)
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [createSshDialogOpen, setCreateSshDialogOpen] = useState(false)
@@ -81,6 +82,12 @@ export default function SandboxDetails() {
       setTab('terminal')
     }
   }, [experimentsEnabled, tab, setTab])
+
+  useEffect(() => {
+    if (filesystemEnabled === false && tab === 'filesystem') {
+      setTab('terminal')
+    }
+  }, [filesystemEnabled, tab, setTab])
 
   const { data: sandbox, isLoading, isError, error, refetch, isFetching } = useSandboxQuery(sandboxId ?? '')
   const isNotFound = isError && isAxiosError(error.cause) && error.cause?.status === 404
@@ -118,7 +125,7 @@ export default function SandboxDetails() {
             <Button variant="secondary" onClick={() => navigate(RoutePath.BILLING_WALLET)}>
               Go to billing
             </Button>
-          ) : undefined,
+          ) : null,
       })
     }
   }
@@ -264,6 +271,7 @@ export default function SandboxDetails() {
                 sandbox={sandbox}
                 isLoading={isLoading}
                 experimentsEnabled={experimentsEnabled}
+                filesystemEnabled={filesystemEnabled}
                 tab={tab}
                 onTabChange={setTab}
               />

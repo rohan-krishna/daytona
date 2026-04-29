@@ -11,7 +11,7 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 98.5%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
@@ -21,9 +21,9 @@ body {
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
+    --muted: 0 0% 95%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 94%;
+    --accent: 0 0% 93%;
     --accent-foreground: 0 0% 9%;
 
     --border: 0 0% 89.8%;
@@ -70,12 +70,17 @@ body {
     --sidebar-ring: 0 0% 59.8%;
 
     --code-background: 0 0% 97%;
+
+    --table-header: 0 0% 97.5%;
+    --table-cell: 0 0% 99.5%;
+    --table-cell-hover: 0 0% 97.5%;
+    --table-cell-active: 0 0% 96%;
   }
 
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 0 0% 2%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    --card: 0 0% 4%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
@@ -88,7 +93,7 @@ body {
     --accent: 0 0% 16%;
     --accent-foreground: 0 0% 98%;
 
-    --border: 0 0% 14.9%;
+    --border: 0 0% 10%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
 
@@ -121,6 +126,11 @@ body {
     --sidebar-ring: 0 0% 59.8%;
 
     --code-background: 0 0% 6%;
+
+    --table-header: 0 0% 8%;
+    --table-cell: 0 0% 3%;
+    --table-cell-hover: 0 0% 6%;
+    --table-cell-active: 0 0% 7%;
   }
 
   .slide-in-from-right {
@@ -199,4 +209,37 @@ body {
 
 ::selection {
   @apply bg-primary text-primary-foreground;
+}
+
+.animate-shimmer-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-color: hsl(var(--muted-foreground) / 0.5);
+  background-image: -webkit-gradient(
+    linear,
+    100% 0,
+    0 0,
+    from(hsl(var(--muted-foreground) / 0.5)),
+    color-stop(0.5, hsl(var(--foreground) / 1)),
+    to(hsl(var(--muted-foreground) / 0.5))
+  );
+  animation: shimmer-text 1.5s infinite;
+  background-repeat: no-repeat;
+  background-size: 50% 200%;
+  transition: all 0.25s;
+}
+
+@keyframes shimmer-text {
+  0% {
+    background-position: -100% top;
+  }
+  50% {
+    background-position: 200% top;
+  }
+  100% {
+    transition: all 0.25s;
+    background-color: hsl(var(--foreground) / 1);
+    background-position: 200% top;
+  }
 }
