@@ -3,7 +3,7 @@ services:
   api:
     image: daytonaio/daytona-api
     ports:
-      - 3000:3000
+      - 3039:3000
     environment:
       - OTEL_ENABLED=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
@@ -28,8 +28,8 @@ services:
       - OIDC_MANAGEMENT_API_CLIENT_ID=
       - OIDC_MANAGEMENT_API_CLIENT_SECRET=
       - OIDC_MANAGEMENT_API_AUDIENCE=
-      - DASHBOARD_URL=http://localhost:3000/dashboard
-      - DASHBOARD_BASE_API_URL=http://localhost:3000
+      - DASHBOARD_URL=http://localhost:3039/dashboard
+      - DASHBOARD_BASE_API_URL=http://localhost:3039
       - POSTHOG_API_KEY=phc_bYtEsdMDrNLydXPD4tufkBrHKgfO2zbycM30LOowYNv
       - POSTHOG_HOST=https://d18ag4dodbta3l.cloudfront.net
       - POSTHOG_ENVIRONMENT=local
@@ -147,7 +147,7 @@ services:
     networks:
       - daytona-network
     ports:
-      - 3003:3003
+      - 3033:3003
     privileged: true
     restart: always
 

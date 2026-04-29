@@ -12,8 +12,8 @@ web:
 staticClients:
   - id: daytona
     redirectURIs:
-      - 'http://localhost:3000'
-      - 'http://localhost:3000/api/oauth2-redirect.html'
+      - 'http://localhost:3039'
+      - 'http://localhost:3039/api/oauth2-redirect.html'
       - 'http://localhost:3009/callback'
       - 'http://proxy.localhost:4000/callback'
     name: 'Daytona'
