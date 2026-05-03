@@ -63,7 +63,8 @@ async function main() {
   }
 
   // Initialize the Daytona client
-  const daytona = new Daytona({ apiKey })
+  const apiUrl = process.env.DAYTONA_URL
+  const daytona = new Daytona({ apiKey, apiUrl })
 
   let sandbox: Sandbox | undefined
 
